@@ -1,0 +1,25 @@
+[package]
+authors = ["Samuele Maci <macisamuele@gmail.com>"]
+description = "Rust interface (aka trait) to deal with objects as they are JSON objects"
+repository = "https://github.com/macisamuele/json-trait-rs"
+edition = "2018"
+keywords = ["json"]
+license = "MIT"
+name = "json-trait-rs"
+readme = "README.md"
+publish = true
+version = "0.0.0"
+
+[badges]
+codecov = { repository = "macisamuele/json-trait-rs", branch = "master", service = "github" }
+is-it-maintained-issue-resolution = { repository = "macisamuele/json-trait-rs" }
+is-it-maintained-open-issues = { repository = "macisamuele/json-trait-rs" }
+maintenance = { status = "experimental" }  # TODO: update it to actively-developed, passively-maintained or as-is
+travis-ci = { repository = "macisamuele/json-trait-rs", branch = "master" }
+
+[features]
+default = []
+
+[dev-dependencies]
+
+[dependencies]
