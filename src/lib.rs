@@ -43,6 +43,13 @@
 
 #[macro_use]
 extern crate strum_macros;
+#[cfg(all(test, feature = "trait_serde_json"))]
+#[macro_use]
+extern crate lazy_static;
+#[cfg(all(test, feature = "trait_serde_json"))]
+#[cfg(test)]
+#[macro_use]
+extern crate serde_json;
 
 // Macros have to be imported first to allow usage on other modules
 #[macro_use]
@@ -52,3 +59,4 @@ mod fragment;
 mod index;
 pub mod json_type;
 pub mod testing;
+pub mod traits;
