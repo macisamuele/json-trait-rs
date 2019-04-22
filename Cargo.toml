@@ -21,5 +21,9 @@ travis-ci = { repository = "macisamuele/json-trait-rs", branch = "master" }
 default = []
 
 [dev-dependencies]
+test-case-derive = "0"
 
 [dependencies]
+strum = "0"
+strum_macros = "0"
+unreachable = "1"
