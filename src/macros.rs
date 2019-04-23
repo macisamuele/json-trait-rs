@@ -30,3 +30,16 @@ macro_rules! testing_vec {
         TestingType::from(thing)
     }};
 }
+
+#[cfg(feature = "trait_serde_yaml")]
+#[macro_export]
+macro_rules! yaml {
+    ($($json:tt)+) => {{
+        use serde_json;
+        use serde_yaml;
+        let thing: serde_yaml::Value = serde_yaml::from_str(
+            serde_json::to_string(&json![$($json)+]).unwrap().as_str(),
+        ).unwrap();
+        thing
+    }};
+}

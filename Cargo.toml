@@ -20,6 +20,7 @@ travis-ci = { repository = "macisamuele/json-trait-rs", branch = "master" }
 [features]
 default = []
 trait_serde_json = ["serde_json"]
+trait_serde_yaml = ["serde_yaml"]
 
 [dev-dependencies]
 lazy_static = "1"
@@ -28,6 +29,7 @@ test-case-derive = "0"
 
 [dependencies]
 serde_json = { version = "1", optional = true }
+serde_yaml = { version = "0", optional = true }
 strum = "0"
 strum_macros = "0"
 unreachable = "1"
