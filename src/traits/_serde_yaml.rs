@@ -244,8 +244,8 @@ mod tests_primitive_type_trait {
         assert_eq!(JsonType::is_string(&value), expected_value);
     }
 
-    #[test_case(yaml![[1]], Some(vec![&yaml![1]]))]
-    #[test_case(yaml![[1, "a"]], Some(vec![&yaml![1], &yaml!["a"]]))]
+    #[test_case(yaml![[1]], Some(vec ! [&yaml![1]]))]
+    #[test_case(yaml![[1, "a"]], Some(vec ! [&yaml![1], &yaml!["a"]]))]
     #[test_case(yaml![null], None)]
     fn test_as_array(value: serde_yaml::Value, expected_value: Option<Vec<&serde_yaml::Value>>) {
         assert_eq!(JsonType::as_array(&value).and_then(|iterator| Some(iterator.collect())), expected_value);
