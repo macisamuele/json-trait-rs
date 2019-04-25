@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.0.0 (not released)
+0.1.0 (2019-04-25)
 ------------------
 - Initial project release
 - Definition of `JsonType` trait
