@@ -2,6 +2,7 @@
 
 [![Linux Build on TravisCI](https://img.shields.io/travis/com/macisamuele/json-trait-rs/master.svg?logo=travis&label=Linux)](https://travis-ci.com/macisamuele/json-trait-rs)
 [![Coverage](https://img.shields.io/codecov/c/github/macisamuele/json-trait-rs/master.svg)](https://codecov.io/gh/macisamuele/json-trait-rs)
+[![Version](https://img.shields.io/crates/v/json-trait-rs.svg)](https://crates.io/crates/json-trait-rs)
 
 [Changelog](./CHANGELOG.md)
 
