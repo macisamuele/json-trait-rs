@@ -1,6 +1,7 @@
 ifdef TRAVIS_RUST_VERSION
 RUST_TOOLCHAIN := ${TRAVIS_RUST_VERSION}
 endif
+
 ifndef RUST_TOOLCHAIN
 RUST_TOOLCHAIN := $(shell cat ${CURDIR}/rust-toolchain 2> /dev/null | head -n 1)
 ifeq ("${RUST_TOOLCHAIN}","")
@@ -9,9 +10,6 @@ endif
 endif
 export RUST_TOOLCHAIN
 
-ifndef GRCOV_DIR
-GRCOV_DIR := ${CURDIR}
-endif
 ifndef CODECOV_DIR
 CODECOV_DIR := ${CURDIR}
 endif
@@ -42,10 +40,14 @@ venv:
 	venv/bin/pip install --no-cache pre-commit
 
 .PHONY: clean
-clean: clean-coverage
+clean: clean-coverage clean-docker-volumes
 	rm -rf target
 	rm -rf venv
 	rm -rf .coverage
+
+.PHONY: bump-submodules
+bump-submodules:
+	bash scripts/bump-all-submodules.sh
 
 .PHONY: clippy
 clippy:
@@ -118,6 +120,10 @@ docker-volumes-create:
 	docker volume create ${DOCKER_PREFIX}_target
 	docker volume create ${DOCKER_PREFIX}_sccache
 
+.PHONY: clean-docker-volumes
+clean-docker-volumes:
+	docker volume rm ${DOCKER_PREFIX}_registry ${DOCKER_PREFIX}_target ${DOCKER_PREFIX}_sccache
+
 .PHONY: start-container
 docker-start: docker-container-build docker-volumes-create
 	docker run \
@@ -143,3 +149,7 @@ clean-coverage:
 .PHONY: coverage-in-container
 coverage-in-container: clean-coverage .coverage
 	CONTAINER_COMMAND='make coverage' ${MAKE} docker-start
+
+.PHONY: expand-macros
+expand-macros:
+	cargo +${RUST_TOOLCHAIN} rustc --tests --all-features -- -Z external-macro-backtrace -Z unstable-options --pretty=expanded
