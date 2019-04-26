@@ -1,21 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail -o posix -o functrace
 
-REPO_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../" >/dev/null 2>&1 && pwd )"
+cargo metadata --format-version 1 | python3 -c "$(cat <<EOF
+import json
+import sys
 
-if ! test -d "${REPO_ROOT}/venv"; then
-    echo "Run \`make -C \"${REPO_ROOT}\" venv\`" > /dev/stderr
-    exit 1
-fi
-
-"${REPO_ROOT}/venv/bin/python" -c "$(cat <<EOF
-from __future__ import print_function
-import toml
-with open("${REPO_ROOT}/Cargo.toml") as f:
-    print(" ".join(sorted(
-        feature
-        for feature in toml.load(f).get("features", {})
-        if feature != "default"
-    )))
+metadata = json.load(sys.stdin)
+package_metadata = next(filter(lambda item: item['id'] == metadata['resolve']['root'], metadata['packages']))
+print(' '.join(filter(lambda item: item != 'default', package_metadata['features'])))
 EOF
 )"

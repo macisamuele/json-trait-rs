@@ -76,6 +76,10 @@ test:
 test-all-flavours:
 	$(call call_all_features,test)
 
+.PHONY: doc
+doc:
+	cargo +${RUST_TOOLCHAIN} doc --no-deps ${CARGO_ARGS}
+
 ${CODECOV_DIR}/codecov.bash:
 	mkdir -p ${CODECOV_DIR}
 	curl -s https://codecov.io/bash > ${CODECOV_DIR}/codecov.bash

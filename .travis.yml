@@ -28,6 +28,10 @@ matrix:
     rust: nightly  # TODO: set it to stable once https://github.com/synek317/test-case-derive/pull/5 is released
   - os: linux
     dist: xenial
+    env: MAKE_TARGET=doc
+    rust: stable
+  - os: linux
+    dist: xenial
     env: MAKE_TARGET=lint
     rust: nightly  # TODO: set it to stable once https://github.com/synek317/test-case-derive/pull/5 is released
   allow_failures:

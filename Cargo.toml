@@ -14,8 +14,10 @@ version = "0.1.0"
 codecov = { repository = "macisamuele/json-trait-rs", branch = "master", service = "github" }
 is-it-maintained-issue-resolution = { repository = "macisamuele/json-trait-rs" }
 is-it-maintained-open-issues = { repository = "macisamuele/json-trait-rs" }
-maintenance = { status = "experimental" }  # TODO: update it to actively-developed, passively-maintained or as-is
-travis-ci = { repository = "macisamuele/json-trait-rs", branch = "master" }
+maintenance = { status = "actively-developed" }
+
+[package.metadata.docs.rs]
+all-features = true
 
 [features]
 default = []
