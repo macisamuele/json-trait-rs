@@ -10,10 +10,6 @@ install_make() {
   fi
 }
 
-build_venv() {
-    make -C "${TRAVIS_BUILD_DIR}" venv
-}
-
 install_kcov() {
   if [[ ${MAKE_TARGET} == "coverage" ]]; then
     if [[ "${KCOV_DIR:-}" == "" ]]; then
@@ -36,7 +32,7 @@ install_kcov() {
       # Make sure that we could run kcov tool on linux
       sudo sh -c "echo 0 > /proc/sys/kernel/yama/ptrace_scope"
     fi
-    pip install --no-cache --user coverage
+    pip install --no-cache-dir --user coverage
     popd
   else
     echo "# Skipping kcov install as target is not coverage" > /dev/stderr
@@ -46,6 +42,7 @@ install_kcov() {
 install_lint_tools() {
   # Install pre-commit and lint tools
   if [[ ${MAKE_TARGET} == "lint" ]]; then
+    pip install --no-cache-dir --user pre-commit
     if rustup component list --toolchain="${TRAVIS_RUST_VERSION}" | grep installed | grep -q rustfmt; then
         echo "# Skipping rustfmt install as already present"
     else
@@ -64,6 +61,5 @@ install_lint_tools() {
 }
 
 install_make
-build_venv
 install_kcov
 install_lint_tools
