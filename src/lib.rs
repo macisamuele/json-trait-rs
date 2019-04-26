@@ -52,8 +52,9 @@ extern crate lazy_static;
 extern crate serde_json;
 
 // Macros have to be imported first to allow usage on other modules
+#[cfg(test)]
 #[macro_use]
-pub mod macros;
+mod macros;
 
 mod fragment;
 mod index;
