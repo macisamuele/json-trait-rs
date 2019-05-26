@@ -39,8 +39,8 @@ impl<'json> JsonMapTrait<'json, serde_json::Value> for JsonMap<'json, serde_json
     }
 }
 
-impl<'json> JsonType<'json> for serde_json::Value {
-    fn as_array(&'json self) -> Option<Box<ExactSizeIterator<Item = &Self> + 'json>> {
+impl JsonType for serde_json::Value {
+    fn as_array<'json>(&'json self) -> Option<Box<ExactSizeIterator<Item = &Self> + 'json>> {
         if let Some(vec) = self.as_array() {
             Some(Box::new(vec.iter()))
         } else {
@@ -68,7 +68,10 @@ impl<'json> JsonType<'json> for serde_json::Value {
         self.as_f64()
     }
 
-    fn as_object(&'json self) -> Option<JsonMap<Self>> {
+    fn as_object<'json>(&'json self) -> Option<JsonMap<Self>>
+    where
+        JsonMap<'json, Self>: JsonMapTrait<'json, Self>,
+    {
         if self.as_object().is_some() {
             Some(JsonMap::new(self))
         } else {
@@ -156,7 +159,7 @@ mod tests_primitive_type_trait {
     #[test_case(&json![{"present": 1}], "not-present", None)]
     #[test_case(&json![[0, 1, 2]], 1, Some(&json![1]))]
     #[test_case(&json![[0, 1, 2]], 4, None)]
-    fn test_get<'json, I: Index<'json, serde_json::Value>>(value: &'json serde_json::Value, index_value: I, expected_value: Option<&'json serde_json::Value>) {
+    fn test_get<'json, I: Index<serde_json::Value>>(value: &'json serde_json::Value, index_value: I, expected_value: Option<&'json serde_json::Value>) {
         assert_eq!(JsonType::get(value, index_value), expected_value);
     }
 

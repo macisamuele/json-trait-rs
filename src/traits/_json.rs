@@ -22,8 +22,8 @@ impl<'json> JsonMapTrait<'json, json::JsonValue> for JsonMap<'json, json::JsonVa
     }
 }
 
-impl<'json> JsonType<'json> for json::JsonValue {
-    fn as_array(&'json self) -> Option<Box<ExactSizeIterator<Item = &Self> + 'json>> {
+impl JsonType for json::JsonValue {
+    fn as_array<'json>(&'json self) -> Option<Box<ExactSizeIterator<Item = &Self> + 'json>> {
         if self.is_array() {
             Some(Box::new(self.members()))
         } else {
@@ -31,11 +31,11 @@ impl<'json> JsonType<'json> for json::JsonValue {
         }
     }
 
-    fn as_boolean(&'json self) -> Option<bool> {
+    fn as_boolean(&self) -> Option<bool> {
         self.as_bool()
     }
 
-    fn as_integer(&'json self) -> Option<i128> {
+    fn as_integer(&self) -> Option<i128> {
         self.as_f64().and_then(
             // The ugly conversion here is needed because rust-json internally does not
             // distinguish integers from floats, which leads to have "1.2".as_i64() == 1
@@ -50,7 +50,7 @@ impl<'json> JsonType<'json> for json::JsonValue {
         )
     }
 
-    fn as_null(&'json self) -> Option<()> {
+    fn as_null(&self) -> Option<()> {
         if self.is_null() {
             Some(())
         } else {
@@ -58,11 +58,14 @@ impl<'json> JsonType<'json> for json::JsonValue {
         }
     }
 
-    fn as_number(&'json self) -> Option<f64> {
+    fn as_number(&self) -> Option<f64> {
         self.as_f64()
     }
 
-    fn as_object(&'json self) -> Option<JsonMap<Self>> {
+    fn as_object<'json>(&'json self) -> Option<JsonMap<Self>>
+    where
+        JsonMap<'json, Self>: JsonMapTrait<'json, Self>,
+    {
         if self.is_object() {
             Some(JsonMap::new(self))
         } else {
@@ -70,11 +73,11 @@ impl<'json> JsonType<'json> for json::JsonValue {
         }
     }
 
-    fn as_string(&'json self) -> Option<&str> {
+    fn as_string(&self) -> Option<&str> {
         self.as_str()
     }
 
-    fn get_attribute<R: AsRef<str>>(&'json self, attribute_name: R) -> Option<&Self> {
+    fn get_attribute<R: AsRef<str>>(&self, attribute_name: R) -> Option<&Self> {
         let extracted_value = self.index(attribute_name.as_ref());
         if let json::JsonValue::Null = extracted_value {
             None
@@ -83,7 +86,7 @@ impl<'json> JsonType<'json> for json::JsonValue {
         }
     }
 
-    fn get_index(&'json self, index: usize) -> Option<&Self> {
+    fn get_index(&self, index: usize) -> Option<&Self> {
         let extracted_value = self.index(index);
         if let json::JsonValue::Null = extracted_value {
             None
@@ -161,7 +164,7 @@ mod tests_primitive_type_trait {
     #[test_case(&rust_json![{"present": 1}], "not-present", None)]
     #[test_case(&rust_json![[0, 1, 2]], 1, Some(&rust_json![1]))]
     #[test_case(&rust_json![[0, 1, 2]], 4, None)]
-    fn test_get<'json, I: Index<'json, json::JsonValue>>(value: &'json json::JsonValue, index_value: I, expected_value: Option<&'json json::JsonValue>) {
+    fn test_get<'json, I: Index<json::JsonValue>>(value: &'json json::JsonValue, index_value: I, expected_value: Option<&'json json::JsonValue>) {
         assert_eq!(JsonType::get(value, index_value), expected_value);
     }
 

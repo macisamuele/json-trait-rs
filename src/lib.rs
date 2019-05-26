@@ -7,7 +7,6 @@
     deprecated,
     illegal_floating_point_literal_pattern,
     improper_ctypes,
-    incoherent_fundamental_impls,
     late_bound_lifetime_arguments,
     missing_copy_implementations,
     missing_debug_implementations,
@@ -27,7 +26,6 @@
     unused_doc_comments,
     unused_extern_crates,
     unused_extern_crates,
-    unused_import_braces,
     unused_import_braces,
     unused_imports,
     unused_macros,
@@ -58,6 +56,9 @@ mod macros;
 
 mod fragment;
 mod index;
-pub mod json_type;
-pub mod testing;
+mod json_type;
+mod testing;
 pub mod traits;
+
+pub use json_type::{EnumJsonType, JsonMap, JsonMapTrait, JsonType};
+pub use testing::TestingType;
