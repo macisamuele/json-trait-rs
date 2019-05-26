@@ -1,4 +1,4 @@
-use crate::json_type::{JsonMap, JsonMapTrait, JsonType};
+use crate::json_type::JsonType;
 
 // Prevent users from implementing the Index trait. (Idea extrapolated from libcore/slice/mod.rs)
 mod private {
@@ -11,43 +11,39 @@ mod private {
     impl Sealed for String {}
 }
 
-pub trait Index<'json, T>: private::Sealed
+pub trait Index<T>: private::Sealed
 where
-    T: 'json + JsonType<'json>,
-    JsonMap<'json, T>: JsonMapTrait<'json, T>,
+    T: JsonType,
 {
-    fn index_into(&self, v: &'json T) -> Option<&'json T>;
+    fn index_into<'json>(&self, v: &'json T) -> Option<&'json T>;
 }
 
-impl<'json, T> Index<'json, T> for usize
+impl<T> Index<T> for usize
 where
-    T: 'json + JsonType<'json>,
-    JsonMap<'json, T>: JsonMapTrait<'json, T>,
+    T: JsonType,
 {
     #[inline]
-    fn index_into(&self, v: &'json T) -> Option<&'json T> {
+    fn index_into<'json>(&self, v: &'json T) -> Option<&'json T> {
         v.get_index(*self)
     }
 }
 
-impl<'json, T> Index<'json, T> for &str
+impl<T> Index<T> for &str
 where
-    T: 'json + JsonType<'json>,
-    JsonMap<'json, T>: JsonMapTrait<'json, T>,
+    T: JsonType,
 {
     #[inline]
-    fn index_into(&self, v: &'json T) -> Option<&'json T> {
+    fn index_into<'json>(&self, v: &'json T) -> Option<&'json T> {
         v.get_attribute(self)
     }
 }
 
-impl<'json, T> Index<'json, T> for String
+impl<T> Index<T> for String
 where
-    T: 'json + JsonType<'json>,
-    JsonMap<'json, T>: JsonMapTrait<'json, T>,
+    T: JsonType,
 {
     #[inline]
-    fn index_into(&self, v: &'json T) -> Option<&'json T> {
+    fn index_into<'json>(&self, v: &'json T) -> Option<&'json T> {
         v.get_attribute(self)
     }
 }

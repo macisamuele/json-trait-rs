@@ -60,8 +60,8 @@ impl From<Vec<TestingType>> for TestingType {
     }
 }
 
-impl<'json> JsonType<'json> for TestingType {
-    fn as_array(&'json self) -> Option<Box<ExactSizeIterator<Item = &Self> + 'json>> {
+impl JsonType for TestingType {
+    fn as_array<'json>(&'json self) -> Option<Box<ExactSizeIterator<Item = &Self> + 'json>> {
         match self {
             TestingType::List(v) => Some(Box::new(v.iter())),
             _ => None,
@@ -100,7 +100,10 @@ impl<'json> JsonType<'json> for TestingType {
         }
     }
 
-    fn as_object(&'json self) -> Option<JsonMap<'json, Self>> {
+    fn as_object<'json>(&'json self) -> Option<JsonMap<'json, Self>>
+    where
+        JsonMap<'json, Self>: JsonMapTrait<'json, Self>,
+    {
         if let TestingType::Object(_) = self {
             Some(JsonMap::new(self))
         } else {
