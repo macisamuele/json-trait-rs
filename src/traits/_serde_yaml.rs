@@ -3,7 +3,7 @@ use serde_yaml;
 
 impl<'json> JsonMapTrait<'json, serde_yaml::Value> for JsonMap<'json, serde_yaml::Value> {
     #[inline]
-    fn keys(&'json self) -> Box<ExactSizeIterator<Item = &str> + 'json> {
+    fn keys(&'json self) -> Box<dyn ExactSizeIterator<Item = &str> + 'json> {
         if let Some(obj) = self.as_mapping() {
             Box::new(obj.iter().map(|(key, _)| (key.as_str().unwrap())))
         } else {
@@ -15,7 +15,7 @@ impl<'json> JsonMapTrait<'json, serde_yaml::Value> for JsonMap<'json, serde_yaml
     }
 
     #[inline]
-    fn values(&'json self) -> Box<ExactSizeIterator<Item = &serde_yaml::Value> + 'json> {
+    fn values(&'json self) -> Box<dyn ExactSizeIterator<Item = &serde_yaml::Value> + 'json> {
         if let Some(obj) = self.as_mapping() {
             Box::new(obj.iter().map(|(_, value)| value))
         } else {
@@ -27,7 +27,7 @@ impl<'json> JsonMapTrait<'json, serde_yaml::Value> for JsonMap<'json, serde_yaml
     }
 
     #[inline]
-    fn items(&'json self) -> Box<ExactSizeIterator<Item = (&str, &serde_yaml::Value)> + 'json> {
+    fn items(&'json self) -> Box<dyn ExactSizeIterator<Item = (&str, &serde_yaml::Value)> + 'json> {
         if let Some(obj) = self.as_mapping() {
             Box::new(obj.iter().map(|(key, value)| (key.as_str().unwrap(), value)))
         } else {
@@ -40,7 +40,7 @@ impl<'json> JsonMapTrait<'json, serde_yaml::Value> for JsonMap<'json, serde_yaml
 }
 
 impl JsonType for serde_yaml::Value {
-    fn as_array<'json>(&'json self) -> Option<Box<ExactSizeIterator<Item = &Self> + 'json>> {
+    fn as_array<'json>(&'json self) -> Option<Box<dyn ExactSizeIterator<Item = &Self> + 'json>> {
         if let Some(vec) = self.as_sequence() {
             Some(Box::new(vec.iter()))
         } else {

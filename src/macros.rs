@@ -4,14 +4,14 @@ macro_rules! testing_map {
         testing_map![$($k => $v),*]
     }};
     ($($k: expr => $v: expr),*) => {{
-        use crate::testing::TestingType;
+        use $crate::RustType;
         use std::collections::hash_map::HashMap;
 
         // Variable definition is needed to ensure that the resulting type is known in the context
         #[allow(unused_mut)]
-        let mut thing: HashMap<String, TestingType> = HashMap::default();
-        $( let _ = thing.insert($k.to_string(), TestingType::from($v)); )*
-        TestingType::from(thing)
+        let mut thing: HashMap<String, RustType> = HashMap::default();
+        $( let _ = thing.insert($k.to_string(), RustType::from($v)); )*
+        RustType::from(thing)
     }};
 }
 
@@ -21,13 +21,13 @@ macro_rules! testing_vec {
         testing_vec![$($item),*]
     }};
     ($($item: expr),*) => {{
-        use crate::testing::TestingType;
+        use $crate::RustType;
 
         // Variable definition is needed to ensure that the resulting type is known in the context
-        let thing: Vec<TestingType> = vec![
-            $( TestingType::from($item), )*
+        let thing: Vec<RustType> = vec![
+            $( RustType::from($item), )*
         ];
-        TestingType::from(thing)
+        RustType::from(thing)
     }};
 }
 

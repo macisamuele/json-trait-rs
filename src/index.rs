@@ -51,11 +51,11 @@ where
 #[cfg(test)]
 mod tests {
     use super::Index;
-    use crate::{json_type::JsonType, testing::TestingType};
+    use crate::{json_type::JsonType, rust_type::RustType};
 
     #[test]
     fn test_into_index_vec() {
-        let testing_vec: TestingType = testing_vec![(), true, "v3", 4, testing_vec![1, 2, 3], testing_map![],];
+        let testing_vec: RustType = testing_vec![(), true, "v3", 4, testing_vec![1, 2, 3], testing_map![],];
 
         let testing_object = testing_vec.clone();
         for (k, v) in testing_vec.as_array().unwrap().enumerate() {
@@ -81,7 +81,7 @@ mod tests {
             "k6" => testing_map![],
         ];
 
-        if let TestingType::Object(ref hash_map) = &testing_map {
+        if let RustType::Object(ref hash_map) = &testing_map {
             for (k, v) in hash_map {
                 assert_eq!(k.as_str().index_into(&testing_map), Some(v), "failed with k={}\n", k);
             }
@@ -108,7 +108,7 @@ mod tests {
             "k6" => testing_map![],
         ];
 
-        if let TestingType::Object(ref hash_map) = &testing_map {
+        if let RustType::Object(ref hash_map) = &testing_map {
             for (k, v) in hash_map {
                 assert_eq!(k.index_into(&testing_map), Some(v), "failed with k={}\n", k);
             }

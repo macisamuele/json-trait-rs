@@ -4,26 +4,26 @@ use std::ops::Index;
 
 impl<'json> JsonMapTrait<'json, json::JsonValue> for JsonMap<'json, json::JsonValue> {
     #[inline]
-    fn keys(&'json self) -> Box<ExactSizeIterator<Item = &str> + 'json> {
+    fn keys(&'json self) -> Box<dyn ExactSizeIterator<Item = &str> + 'json> {
         // TODO: remove .collect().into_iter() once https://github.com/maciejhirsz/json-rust/pull/156 is merged
         Box::new(self.entries().map(|(key, _)| key).collect::<Vec<_>>().into_iter())
     }
 
     #[inline]
-    fn values(&'json self) -> Box<ExactSizeIterator<Item = &json::JsonValue> + 'json> {
+    fn values(&'json self) -> Box<dyn ExactSizeIterator<Item = &json::JsonValue> + 'json> {
         // TODO: remove .collect().into_iter() once https://github.com/maciejhirsz/json-rust/pull/156 is merged
         Box::new(self.entries().map(|(_, value)| value).collect::<Vec<_>>().into_iter())
     }
 
     #[inline]
-    fn items(&'json self) -> Box<ExactSizeIterator<Item = (&str, &json::JsonValue)> + 'json> {
+    fn items(&'json self) -> Box<dyn ExactSizeIterator<Item = (&str, &json::JsonValue)> + 'json> {
         // TODO: remove .collect().into_iter() once https://github.com/maciejhirsz/json-rust/pull/156 is merged
         Box::new(self.entries().collect::<Vec<_>>().into_iter())
     }
 }
 
 impl JsonType for json::JsonValue {
-    fn as_array<'json>(&'json self) -> Option<Box<ExactSizeIterator<Item = &Self> + 'json>> {
+    fn as_array<'json>(&'json self) -> Option<Box<dyn ExactSizeIterator<Item = &Self> + 'json>> {
         if self.is_array() {
             Some(Box::new(self.members()))
         } else {

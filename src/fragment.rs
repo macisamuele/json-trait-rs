@@ -1,4 +1,4 @@
-pub(in crate) fn fragment_components_from_fragment(fragment: &str) -> Box<Iterator<Item = String>> {
+pub(in crate) fn fragment_components_from_fragment(fragment: &str) -> Box<dyn Iterator<Item = String>> {
     let fragment = fragment.trim_start_matches('/');
     if fragment.is_empty() {
         Box::new(Vec::with_capacity(0).into_iter())

@@ -50,15 +50,14 @@ extern crate lazy_static;
 extern crate serde_json;
 
 // Macros have to be imported first to allow usage on other modules
-#[cfg(test)]
 #[macro_use]
-mod macros;
+pub mod macros;
 
 mod fragment;
 mod index;
 mod json_type;
-mod testing;
+mod rust_type;
 pub mod traits;
 
 pub use json_type::{EnumJsonType, JsonMap, JsonMapTrait, JsonType};
-pub use testing::TestingType;
+pub use rust_type::RustType;

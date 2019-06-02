@@ -3,73 +3,73 @@ use std::{collections::hash_map::HashMap, ops::Deref};
 
 #[allow(clippy::module_name_repetitions)]
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub enum TestingType {
+pub enum RustType {
     Null,
     Boolean(bool),
     String(String),
     Integer(i32),
-    List(Vec<TestingType>),
-    Object(HashMap<String, TestingType>),
+    List(Vec<RustType>),
+    Object(HashMap<String, RustType>),
 }
 
-impl Default for TestingType {
+impl Default for RustType {
     fn default() -> Self {
-        TestingType::Null
+        RustType::Null
     }
 }
 
-impl From<()> for TestingType {
+impl From<()> for RustType {
     fn from(_: ()) -> Self {
-        TestingType::Null
+        RustType::Null
     }
 }
 
-impl From<bool> for TestingType {
+impl From<bool> for RustType {
     fn from(value: bool) -> Self {
-        TestingType::Boolean(value)
+        RustType::Boolean(value)
     }
 }
 
-impl From<&str> for TestingType {
+impl From<&str> for RustType {
     fn from(value: &str) -> Self {
-        TestingType::String(String::from(value))
+        RustType::String(String::from(value))
     }
 }
 
-impl From<String> for TestingType {
+impl From<String> for RustType {
     fn from(value: String) -> Self {
-        TestingType::String(value)
+        RustType::String(value)
     }
 }
 
-impl From<i32> for TestingType {
+impl From<i32> for RustType {
     fn from(value: i32) -> Self {
-        TestingType::Integer(value)
+        RustType::Integer(value)
     }
 }
 
-impl From<HashMap<String, TestingType>> for TestingType {
+impl From<HashMap<String, RustType>> for RustType {
     fn from(value: HashMap<String, Self>) -> Self {
-        TestingType::Object(value)
+        RustType::Object(value)
     }
 }
 
-impl From<Vec<TestingType>> for TestingType {
+impl From<Vec<RustType>> for RustType {
     fn from(value: Vec<Self>) -> Self {
-        TestingType::List(value)
+        RustType::List(value)
     }
 }
 
-impl JsonType for TestingType {
-    fn as_array<'json>(&'json self) -> Option<Box<ExactSizeIterator<Item = &Self> + 'json>> {
+impl JsonType for RustType {
+    fn as_array<'json>(&'json self) -> Option<Box<dyn ExactSizeIterator<Item = &Self> + 'json>> {
         match self {
-            TestingType::List(v) => Some(Box::new(v.iter())),
+            RustType::List(v) => Some(Box::new(v.iter())),
             _ => None,
         }
     }
 
     fn as_boolean(&self) -> Option<bool> {
-        if let TestingType::Boolean(v) = self {
+        if let RustType::Boolean(v) = self {
             Some(*v)
         } else {
             None
@@ -77,7 +77,7 @@ impl JsonType for TestingType {
     }
 
     fn as_integer(&self) -> Option<i128> {
-        if let TestingType::Integer(v) = self {
+        if let RustType::Integer(v) = self {
             Some(i128::from(*v))
         } else {
             None
@@ -85,7 +85,7 @@ impl JsonType for TestingType {
     }
 
     fn as_null(&self) -> Option<()> {
-        if let TestingType::Null = self {
+        if let RustType::Null = self {
             Some(())
         } else {
             None
@@ -93,7 +93,7 @@ impl JsonType for TestingType {
     }
 
     fn as_number(&self) -> Option<f64> {
-        if let TestingType::Integer(v) = self {
+        if let RustType::Integer(v) = self {
             Some(f64::from(*v))
         } else {
             None
@@ -104,7 +104,7 @@ impl JsonType for TestingType {
     where
         JsonMap<'json, Self>: JsonMapTrait<'json, Self>,
     {
-        if let TestingType::Object(_) = self {
+        if let RustType::Object(_) = self {
             Some(JsonMap::new(self))
         } else {
             None
@@ -112,7 +112,7 @@ impl JsonType for TestingType {
     }
 
     fn as_string(&self) -> Option<&str> {
-        if let TestingType::String(s) = self {
+        if let RustType::String(s) = self {
             Some(s)
         } else {
             None
@@ -120,7 +120,7 @@ impl JsonType for TestingType {
     }
 
     fn get_attribute<R: AsRef<str>>(&self, attribute_name: R) -> Option<&Self> {
-        if let TestingType::Object(object) = self {
+        if let RustType::Object(object) = self {
             object.get(attribute_name.as_ref())
         } else {
             None
@@ -128,7 +128,7 @@ impl JsonType for TestingType {
     }
 
     fn get_index(&self, index: usize) -> Option<&Self> {
-        if let TestingType::List(array) = self {
+        if let RustType::List(array) = self {
             array.get(index)
         } else {
             None
@@ -136,10 +136,10 @@ impl JsonType for TestingType {
     }
 }
 
-impl<'json> JsonMapTrait<'json, TestingType> for JsonMap<'json, TestingType> {
+impl<'json> JsonMapTrait<'json, RustType> for JsonMap<'json, RustType> {
     #[inline]
-    fn items(&'json self) -> Box<ExactSizeIterator<Item = (&str, &TestingType)> + 'json> {
-        if let TestingType::Object(hash_map) = self.deref() {
+    fn items(&'json self) -> Box<dyn ExactSizeIterator<Item = (&str, &RustType)> + 'json> {
+        if let RustType::Object(hash_map) = self.deref() {
             Box::new(hash_map.iter().map(|(k, v)| (k.as_str(), v)))
         } else {
             #[allow(unsafe_code)]
@@ -154,14 +154,14 @@ impl<'json> JsonMapTrait<'json, TestingType> for JsonMap<'json, TestingType> {
 mod smoke_test {
     use crate::{
         json_type::{JsonMapTrait, JsonType},
-        testing::TestingType,
+        rust_type::RustType,
     };
     use std::collections::hash_map::HashMap;
 
     #[test]
     fn test_testing_type_instance_string() {
         let string = "string";
-        let testing_type_instance = TestingType::from(string);
+        let testing_type_instance = RustType::from(string);
         assert_eq!(testing_type_instance.as_string(), Some(string));
         assert_eq!(testing_type_instance.has_attribute("attribute"), false);
         assert_eq!(testing_type_instance.is_array(), false);
@@ -176,7 +176,7 @@ mod smoke_test {
     #[test]
     fn test_testing_type_instance_integer() {
         let integer = 1;
-        let testing_type_instance = TestingType::from(integer);
+        let testing_type_instance = RustType::from(integer);
         assert_eq!(testing_type_instance.as_integer(), Some(i128::from(integer)));
         assert_eq!(testing_type_instance.has_attribute("attribute"), false);
         assert_eq!(testing_type_instance.is_array(), false);
@@ -190,8 +190,8 @@ mod smoke_test {
 
     #[test]
     fn test_testing_type_instance_list() {
-        let array = vec![TestingType::from(1), TestingType::from(2)];
-        let testing_type_instance = TestingType::from(array.clone());
+        let array = vec![RustType::from(1), RustType::from(2)];
+        let testing_type_instance = RustType::from(array.clone());
         assert_eq!(
             testing_type_instance.as_array().and_then(|iterator| Some(iterator.collect::<Vec<_>>())),
             Some(array.iter().collect())
@@ -208,13 +208,13 @@ mod smoke_test {
 
     #[test]
     fn test_testing_type_instance_object() {
-        let object: HashMap<String, TestingType> = [("attribute".to_string(), TestingType::from("value"))].iter().cloned().collect();
-        let testing_type_instance = TestingType::from(object);
+        let object: HashMap<String, RustType> = [("attribute".to_string(), RustType::from("value"))].iter().cloned().collect();
+        let testing_type_instance = RustType::from(object);
         assert_eq!(
             testing_type_instance.as_object().unwrap().items().collect::<Vec<_>>(),
-            vec![("attribute", &TestingType::from("value"))],
+            vec![("attribute", &RustType::from("value"))],
         );
-        assert_eq!(testing_type_instance.get("attribute"), Some(&TestingType::from("value")));
+        assert_eq!(testing_type_instance.get("attribute"), Some(&RustType::from("value")));
         assert_eq!(testing_type_instance.has_attribute("attribute"), true);
         assert_eq!(testing_type_instance.is_array(), false);
         assert_eq!(testing_type_instance.is_boolean(), false);
