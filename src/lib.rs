@@ -57,8 +57,8 @@ mod macros;
 mod fragment;
 mod index;
 mod json_type;
-mod testing;
+mod rust_type;
 pub mod traits;
 
 pub use json_type::{EnumJsonType, JsonMap, JsonMapTrait, JsonType};
-pub use testing::TestingType;
+pub use rust_type::RustType;

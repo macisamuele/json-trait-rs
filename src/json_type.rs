@@ -232,7 +232,7 @@ mod enum_primitive_type_tests {
 mod primitive_type_tests {
     #[allow(unused_imports)]
     use crate::json_type::JsonType;
-    use crate::testing::TestingType;
+    use crate::rust_type::RustType;
     use test_case_derive::test_case;
 
     #[test_case("", Some(&testing_map![
@@ -253,12 +253,12 @@ mod primitive_type_tests {
         1,
         "2"
     ]))]
-    #[test_case("/key/inner_key/0", Some(&TestingType::from(1)))]
-    #[test_case("/key/inner_key/1", Some(&TestingType::from("2")))]
+    #[test_case("/key/inner_key/0", Some(&RustType::from(1)))]
+    #[test_case("/key/inner_key/1", Some(&RustType::from("2")))]
     #[test_case("/not_present", None)]
     #[test_case("/key/inner_key/a", None)]
     #[test_case("/key/inner_key/2", None)]
-    fn test_get_fragment(fragment: &str, expected_value: Option<&TestingType>) {
+    fn test_get_fragment(fragment: &str, expected_value: Option<&RustType>) {
         let external_map = testing_map![
             "key" => testing_map![
                 "inner_key" => testing_vec![
