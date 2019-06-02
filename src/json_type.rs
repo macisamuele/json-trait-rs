@@ -49,23 +49,23 @@ where
     T: 'json + JsonType,
 {
     #[inline]
-    fn keys(&'json self) -> Box<ExactSizeIterator<Item = &str> + 'json> {
+    fn keys(&'json self) -> Box<dyn ExactSizeIterator<Item = &str> + 'json> {
         Box::new(self.items().map(|(key, _)| key))
     }
 
     #[inline]
-    fn values(&'json self) -> Box<ExactSizeIterator<Item = &T> + 'json> {
+    fn values(&'json self) -> Box<dyn ExactSizeIterator<Item = &T> + 'json> {
         Box::new(self.items().map(|(_, value)| value))
     }
 
-    fn items(&'json self) -> Box<ExactSizeIterator<Item = (&str, &T)> + 'json>;
+    fn items(&'json self) -> Box<dyn ExactSizeIterator<Item = (&str, &T)> + 'json>;
 }
 
 // This trait allows us to have a 1:1 mapping with serde_json, generally used by rust libraries
 // but gives us the power to use different objects from serde_json. This gives us the ability
 // to support usage of different data-types like PyObject from pyo3 in case of python bindings
 pub trait JsonType: Clone + Debug + PartialEq + Sync + Send {
-    fn as_array<'json>(&'json self) -> Option<Box<ExactSizeIterator<Item = &Self> + 'json>>;
+    fn as_array<'json>(&'json self) -> Option<Box<dyn ExactSizeIterator<Item = &Self> + 'json>>;
     fn as_boolean(&self) -> Option<bool>;
     fn as_integer(&self) -> Option<i128>;
     fn as_null(&self) -> Option<()>;
