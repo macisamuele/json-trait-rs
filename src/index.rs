@@ -55,7 +55,7 @@ mod tests {
 
     #[test]
     fn test_into_index_vec() {
-        let testing_vec: RustType = testing_vec![(), true, "v3", 4, testing_vec![1, 2, 3], testing_map![],];
+        let testing_vec: RustType = rust_type_vec![(), true, "v3", 4, rust_type_vec![1, 2, 3], rust_type_map![],];
 
         let testing_object = testing_vec.clone();
         for (k, v) in testing_vec.as_array().unwrap().enumerate() {
@@ -72,13 +72,13 @@ mod tests {
 
     #[test]
     fn test_into_index_map_str() {
-        let testing_map = testing_map![
+        let testing_map = rust_type_map![
             "k1" => (),
             "k2" => true,
             "k3" => "v3",
             "k4" => 4,
-            "k5" => testing_vec![1,2,3],
-            "k6" => testing_map![],
+            "k5" => rust_type_vec![1,2,3],
+            "k6" => rust_type_map![],
         ];
 
         if let RustType::Object(ref hash_map) = &testing_map {
@@ -99,13 +99,13 @@ mod tests {
 
     #[test]
     fn test_into_index_map_string() {
-        let testing_map = testing_map![
+        let testing_map = rust_type_map![
             "k1" => (),
             "k2" => true,
             "k3" => "v3",
             "k4" => 4,
-            "k5" => testing_vec![1,2,3],
-            "k6" => testing_map![],
+            "k5" => rust_type_vec![1,2,3],
+            "k6" => rust_type_map![],
         ];
 
         if let RustType::Object(ref hash_map) = &testing_map {

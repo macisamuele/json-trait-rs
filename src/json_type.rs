@@ -235,21 +235,21 @@ mod primitive_type_tests {
     use crate::rust_type::RustType;
     use test_case_derive::test_case;
 
-    #[test_case("", Some(&testing_map![
-        "key" => testing_map![
-            "inner_key" => testing_vec![
+    #[test_case("", Some(&rust_type_map![
+        "key" => rust_type_map![
+            "inner_key" => rust_type_vec![
                 1,
                 "2"
             ],
         ],
     ]))]
-    #[test_case("/key", Some(&testing_map![
-        "inner_key" => testing_vec![
+    #[test_case("/key", Some(&rust_type_map![
+        "inner_key" => rust_type_vec![
             1,
             "2"
         ],
     ]))]
-    #[test_case("/key/inner_key", Some(&testing_vec![
+    #[test_case("/key/inner_key", Some(&rust_type_vec![
         1,
         "2"
     ]))]
@@ -259,9 +259,9 @@ mod primitive_type_tests {
     #[test_case("/key/inner_key/a", None)]
     #[test_case("/key/inner_key/2", None)]
     fn test_get_fragment(fragment: &str, expected_value: Option<&RustType>) {
-        let external_map = testing_map![
-            "key" => testing_map![
-                "inner_key" => testing_vec![
+        let external_map = rust_type_map![
+            "key" => rust_type_map![
+                "inner_key" => rust_type_vec![
                     1,
                     "2"
                 ],
