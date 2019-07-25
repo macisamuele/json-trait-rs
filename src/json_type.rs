@@ -46,21 +46,15 @@ impl EnumJsonType {
 
 pub trait JsonMapTrait<'json, T>
 where
-    T: JsonType<T>,
+    T: 'json + JsonType<T>,
 {
     #[inline]
-    fn keys(&'json self) -> Box<dyn ExactSizeIterator<Item = &str> + 'json>
-    where
-        T: 'json,
-    {
+    fn keys(&'json self) -> Box<dyn ExactSizeIterator<Item = &str> + 'json> {
         Box::new(self.items().map(|(key, _)| key))
     }
 
     #[inline]
-    fn values(&'json self) -> Box<dyn ExactSizeIterator<Item = &T> + 'json>
-    where
-        T: 'json,
-    {
+    fn values(&'json self) -> Box<dyn ExactSizeIterator<Item = &T> + 'json> {
         Box::new(self.items().map(|(_, value)| value))
     }
 
