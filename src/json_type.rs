@@ -1,4 +1,4 @@
-use crate::{fragment::fragment_components_from_fragment, index::Index};
+use crate::fragment::fragment_components_from_fragment;
 use std::{fmt::Debug, ops::Deref};
 
 #[allow(clippy::module_name_repetitions)]
@@ -46,15 +46,21 @@ impl EnumJsonType {
 
 pub trait JsonMapTrait<'json, T>
 where
-    T: 'json + JsonType,
+    T: JsonType<T>,
 {
     #[inline]
-    fn keys(&'json self) -> Box<dyn ExactSizeIterator<Item = &str> + 'json> {
+    fn keys(&'json self) -> Box<dyn ExactSizeIterator<Item = &str> + 'json>
+    where
+        T: 'json,
+    {
         Box::new(self.items().map(|(key, _)| key))
     }
 
     #[inline]
-    fn values(&'json self) -> Box<dyn ExactSizeIterator<Item = &T> + 'json> {
+    fn values(&'json self) -> Box<dyn ExactSizeIterator<Item = &T> + 'json>
+    where
+        T: 'json,
+    {
         Box::new(self.items().map(|(_, value)| value))
     }
 
@@ -64,19 +70,22 @@ where
 // This trait allows us to have a 1:1 mapping with serde_json, generally used by rust libraries
 // but gives us the power to use different objects from serde_json. This gives us the ability
 // to support usage of different data-types like PyObject from pyo3 in case of python bindings
-pub trait JsonType: Clone + Debug + PartialEq + Sync + Send {
-    fn as_array<'json>(&'json self) -> Option<Box<dyn ExactSizeIterator<Item = &Self> + 'json>>;
+pub trait JsonType<T>: Debug + Sync + Send
+where
+    T: JsonType<T>,
+{
+    fn as_array<'json>(&'json self) -> Option<Box<dyn ExactSizeIterator<Item = &T> + 'json>>;
     fn as_boolean(&self) -> Option<bool>;
     fn as_integer(&self) -> Option<i128>;
     fn as_null(&self) -> Option<()>;
     fn as_number(&self) -> Option<f64>;
-    fn as_object<'json>(&'json self) -> Option<JsonMap<'json, Self>>
+    fn as_object<'json>(&'json self) -> Option<JsonMap<T>>
     where
-        JsonMap<'json, Self>: JsonMapTrait<'json, Self>;
+        JsonMap<'json, T>: JsonMapTrait<'json, T>;
     fn as_string(&self) -> Option<&str>;
 
-    fn get_attribute<R: AsRef<str>>(&self, attribute_name: R) -> Option<&Self>;
-    fn get_index(&self, index: usize) -> Option<&Self>;
+    fn get_attribute(&self, attribute_name: &str) -> Option<&T>;
+    fn get_index(&self, index: usize) -> Option<&T>;
 
     #[inline]
     fn is_array(&self) -> bool {
@@ -106,7 +115,8 @@ pub trait JsonType: Clone + Debug + PartialEq + Sync + Send {
     #[inline]
     fn is_object<'json>(&'json self) -> bool
     where
-        JsonMap<'json, Self>: JsonMapTrait<'json, Self>,
+        T: 'json,
+        JsonMap<'json, T>: JsonMapTrait<'json, T>,
     {
         self.as_object().is_some()
     }
@@ -122,14 +132,10 @@ pub trait JsonType: Clone + Debug + PartialEq + Sync + Send {
     }
 
     #[inline]
-    fn get<I: Index<Self>>(&self, index: I) -> Option<&Self> {
-        index.index_into(self)
-    }
-
-    #[inline]
     fn primitive_type<'json>(&'json self) -> EnumJsonType
     where
-        JsonMap<'json, Self>: JsonMapTrait<'json, Self>,
+        T: 'json,
+        JsonMap<'json, T>: JsonMapTrait<'json, T>,
     {
         // This might not be efficient, but it could be comfortable to quickly extract the type especially while debugging
         if self.is_array() {
@@ -153,36 +159,16 @@ pub trait JsonType: Clone + Debug + PartialEq + Sync + Send {
             }
         }
     }
-
-    fn fragment<'json, R: AsRef<str>>(&'json self, fragment: R) -> Option<&Self>
-    where
-        JsonMap<'json, Self>: JsonMapTrait<'json, Self>,
-    {
-        // NOTE: Iteration order matters, so iterate![] should not be used here
-        fragment_components_from_fragment(fragment.as_ref())
-            // Using fold as for now tail recursion is not supported in rust, but if it will ever happen then `fold` will most probably be the first candidate
-            .fold(Some(self), |result, fragment_part| {
-                result.and_then(|value| match value.primitive_type() {
-                    EnumJsonType::Object => value.get_attribute(fragment_part),
-                    EnumJsonType::Array => fragment_part
-                        .parse::<usize>()
-                        .and_then(|index| Ok(value.get_index(index)))
-                        .ok()
-                        .unwrap_or(None),
-                    _ => None,
-                })
-            })
-    }
 }
 
 #[derive(Debug)]
 pub struct JsonMap<'json, T>(&'json T)
 where
-    T: JsonType;
+    T: JsonType<T>;
 
 impl<'json, T> JsonMap<'json, T>
 where
-    T: JsonType,
+    T: JsonType<T>,
 {
     #[inline]
     pub fn new(object: &'json T) -> Self {
@@ -192,7 +178,7 @@ where
 
 impl<'json, T> Deref for JsonMap<'json, T>
 where
-    T: JsonType,
+    T: JsonType<T>,
 {
     type Target = T;
 
@@ -201,9 +187,29 @@ where
     }
 }
 
+#[allow(clippy::module_name_repetitions)]
+pub fn get_fragment<'json, T>(json_object: &'json T, fragment: &str) -> Option<&'json T>
+where
+    T: JsonType<T>,
+    JsonMap<'json, T>: JsonMapTrait<'json, T>,
+{
+    let mut result: Option<&T> = Some(json_object);
+    for fragment_part in fragment_components_from_fragment(fragment) {
+        if let Some(value) = result {
+            result = match value.primitive_type() {
+                EnumJsonType::Object => value.get_attribute(fragment_part.as_str()),
+                EnumJsonType::Array => fragment_part.parse::<usize>().and_then(|index| Ok(value.get_index(index))).ok().unwrap_or(None),
+                _ => None,
+            };
+        }
+    }
+    result
+}
+
 #[cfg(test)]
-mod enum_primitive_type_tests {
-    use super::EnumJsonType;
+mod tests {
+    use super::{get_fragment, EnumJsonType, JsonType};
+    use crate::rust_type::RustType;
     use test_case_derive::test_case;
 
     #[test_case("array", Some(EnumJsonType::Array))]
@@ -213,7 +219,7 @@ mod enum_primitive_type_tests {
     #[test_case("object", Some(EnumJsonType::Object))]
     #[test_case("string", Some(EnumJsonType::String))]
     #[test_case("an invalid type", None)]
-    fn from_type(type_str: &str, expected_option_enum_primitive_type: Option<EnumJsonType>) {
+    fn test_enum_primitive_type_from_type(type_str: &str, expected_option_enum_primitive_type: Option<EnumJsonType>) {
         assert_eq!(EnumJsonType::from_type(type_str), expected_option_enum_primitive_type);
     }
 
@@ -223,36 +229,18 @@ mod enum_primitive_type_tests {
     #[test_case(EnumJsonType::Null, "null")]
     #[test_case(EnumJsonType::Object, "object")]
     #[test_case(EnumJsonType::String, "string")]
-    fn to_type(enum_primitive_type: EnumJsonType, expected_type_str: &str) {
+    fn test_enum_primitive_type_to_type(enum_primitive_type: EnumJsonType, expected_type_str: &str) {
         assert_eq!(enum_primitive_type.to_type(), expected_type_str);
     }
-}
 
-#[cfg(test)]
-mod primitive_type_tests {
-    #[allow(unused_imports)]
-    use crate::json_type::JsonType;
-    use crate::rust_type::RustType;
-    use test_case_derive::test_case;
+    #[test]
+    fn test_ensure_that_trait_can_be_made_into_an_object() {
+        let _: Option<Box<dyn JsonType<RustType>>> = None;
+    }
 
-    #[test_case("", Some(&rust_type_map![
-        "key" => rust_type_map![
-            "inner_key" => rust_type_vec![
-                1,
-                "2"
-            ],
-        ],
-    ]))]
-    #[test_case("/key", Some(&rust_type_map![
-        "inner_key" => rust_type_vec![
-            1,
-            "2"
-        ],
-    ]))]
-    #[test_case("/key/inner_key", Some(&rust_type_vec![
-        1,
-        "2"
-    ]))]
+    #[test_case("", Some(&rust_type_map!["key" => rust_type_map!["inner_key" => rust_type_vec![1, "2"]]]))]
+    #[test_case("/key", Some(&rust_type_map!["inner_key" => rust_type_vec![1, "2"]]))]
+    #[test_case("/key/inner_key", Some(&rust_type_vec![1,"2"]))]
     #[test_case("/key/inner_key/0", Some(&RustType::from(1)))]
     #[test_case("/key/inner_key/1", Some(&RustType::from("2")))]
     #[test_case("/not_present", None)]
@@ -267,6 +255,6 @@ mod primitive_type_tests {
                 ],
             ],
         ];
-        assert_eq!(external_map.fragment(fragment), expected_value);
+        assert_eq!(get_fragment(&external_map, fragment), expected_value);
     }
 }

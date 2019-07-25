@@ -5,7 +5,7 @@ impl<'json> JsonMapTrait<'json, serde_json::Value> for JsonMap<'json, serde_json
     #[inline]
     fn keys(&'json self) -> Box<dyn ExactSizeIterator<Item = &str> + 'json> {
         if let Some(obj) = self.as_object() {
-            Box::new(obj.keys().map(String::as_str))
+            Box::new(obj.keys().map(AsRef::as_ref))
         } else {
             #[allow(unsafe_code)]
             unsafe {
@@ -29,7 +29,7 @@ impl<'json> JsonMapTrait<'json, serde_json::Value> for JsonMap<'json, serde_json
     #[inline]
     fn items(&'json self) -> Box<dyn ExactSizeIterator<Item = (&str, &serde_json::Value)> + 'json> {
         if let Some(obj) = self.as_object() {
-            Box::new(obj.iter().map(|(key, value)| (key.as_str(), value)))
+            Box::new(obj.iter().map(|(k, v)| (k.as_ref(), v)))
         } else {
             #[allow(unsafe_code)]
             unsafe {
@@ -39,7 +39,7 @@ impl<'json> JsonMapTrait<'json, serde_json::Value> for JsonMap<'json, serde_json
     }
 }
 
-impl JsonType for serde_json::Value {
+impl JsonType<serde_json::Value> for serde_json::Value {
     fn as_array<'json>(&'json self) -> Option<Box<dyn ExactSizeIterator<Item = &Self> + 'json>> {
         if let Some(vec) = self.as_array() {
             Some(Box::new(vec.iter()))
@@ -72,7 +72,7 @@ impl JsonType for serde_json::Value {
     where
         JsonMap<'json, Self>: JsonMapTrait<'json, Self>,
     {
-        if self.as_object().is_some() {
+        if self.is_object() {
             Some(JsonMap::new(self))
         } else {
             None
@@ -83,8 +83,8 @@ impl JsonType for serde_json::Value {
         self.as_str()
     }
 
-    fn get_attribute<R: AsRef<str>>(&self, attribute_name: R) -> Option<&Self> {
-        self.get(attribute_name.as_ref())
+    fn get_attribute(&self, attribute_name: &str) -> Option<&Self> {
+        self.get(attribute_name)
     }
 
     fn get_index(&self, index: usize) -> Option<&Self> {
@@ -98,7 +98,7 @@ impl JsonType for serde_json::Value {
 
 #[cfg(test)]
 mod tests_json_map_trait {
-    use crate::json_type::{JsonMap, JsonMapTrait};
+    use crate::{json_type::JsonMap, JsonMapTrait};
     use serde_json;
 
     lazy_static! {
@@ -126,10 +126,7 @@ mod tests_json_map_trait {
 
 #[cfg(test)]
 mod tests_primitive_type_trait {
-    use crate::{
-        index::Index,
-        json_type::{EnumJsonType, JsonType},
-    };
+    use crate::json_type::{EnumJsonType, JsonType};
     use test_case_derive::test_case;
 
     #[test_case(json![[]], EnumJsonType::Array)]
@@ -153,14 +150,6 @@ mod tests_primitive_type_trait {
     #[test_case(json![[0, 1, 2]], 4, None)]
     fn test_get_index(value: serde_json::Value, index: usize, expected_value: Option<&serde_json::Value>) {
         assert_eq!(JsonType::get_index(&value, index), expected_value);
-    }
-
-    #[test_case(&json![{"present": 1}], "present", Some(&json![1]))]
-    #[test_case(&json![{"present": 1}], "not-present", None)]
-    #[test_case(&json![[0, 1, 2]], 1, Some(&json![1]))]
-    #[test_case(&json![[0, 1, 2]], 4, None)]
-    fn test_get<'json, I: Index<serde_json::Value>>(value: &'json serde_json::Value, index_value: I, expected_value: Option<&'json serde_json::Value>) {
-        assert_eq!(JsonType::get(value, index_value), expected_value);
     }
 
     #[test_case(json![{"present": 1}], "present", true)]
@@ -301,5 +290,38 @@ mod tests_primitive_type_trait {
     #[test_case(json!["1"], Some("1"))]
     fn test_as_string(value: serde_json::Value, expected_value: Option<&str>) {
         assert_eq!(JsonType::as_string(&value), expected_value);
+    }
+}
+
+#[cfg(test)]
+mod json_map_tests {
+    use crate::{json_type::JsonType, JsonMapTrait};
+
+    lazy_static! {
+        static ref TESTING_MAP: serde_json::Value = json![{"key1": {"key2": 1}}];
+    }
+
+    #[test]
+    fn test_keys() {
+        let key1 = TESTING_MAP.get_attribute("key1").unwrap();
+        assert_eq!(JsonType::as_object(key1).unwrap().keys().map(|k| { k }).collect::<Vec<_>>(), vec![String::from("key2")],);
+    }
+
+    #[test]
+    fn test_values() {
+        let key1 = TESTING_MAP.get_attribute("key1").unwrap();
+        assert_eq!(
+            JsonType::as_object(key1).unwrap().values().map(|v| { format!("{:?}", v) }).collect::<Vec<_>>(),
+            vec![format!("{:?}", serde_json::Value::from(1))],
+        );
+    }
+
+    #[test]
+    fn test_items() {
+        let key1 = TESTING_MAP.get_attribute("key1").unwrap();
+        assert_eq!(
+            JsonType::as_object(key1).unwrap().items().map(|(k, v)| { format!("{} -> {:?}", k, v) }).collect::<Vec<_>>(),
+            vec![format!("key2 -> {:?}", serde_json::Value::from(1))],
+        );
     }
 }
