@@ -49,16 +49,16 @@ where
     T: 'json + JsonType<T>,
 {
     #[inline]
-    fn keys(&'json self) -> Box<dyn ExactSizeIterator<Item = &str> + 'json> {
+    fn keys(&'json self) -> Box<dyn Iterator<Item = &str> + 'json> {
         Box::new(self.items().map(|(key, _)| key))
     }
 
     #[inline]
-    fn values(&'json self) -> Box<dyn ExactSizeIterator<Item = &T> + 'json> {
+    fn values(&'json self) -> Box<dyn Iterator<Item = &T> + 'json> {
         Box::new(self.items().map(|(_, value)| value))
     }
 
-    fn items(&'json self) -> Box<dyn ExactSizeIterator<Item = (&str, &T)> + 'json>;
+    fn items(&'json self) -> Box<dyn Iterator<Item = (&str, &T)> + 'json>;
 }
 
 // This trait allows us to have a 1:1 mapping with serde_json, generally used by rust libraries
@@ -68,7 +68,7 @@ pub trait JsonType<T>: Debug + Sync + Send
 where
     T: JsonType<T>,
 {
-    fn as_array<'json>(&'json self) -> Option<Box<dyn ExactSizeIterator<Item = &T> + 'json>>;
+    fn as_array<'json>(&'json self) -> Option<Box<dyn Iterator<Item = &T> + 'json>>;
     fn as_boolean(&self) -> Option<bool>;
     fn as_integer(&self) -> Option<i128>;
     fn as_null(&self) -> Option<()>;

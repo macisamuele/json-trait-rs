@@ -3,7 +3,7 @@ use serde_json;
 
 impl<'json> JsonMapTrait<'json, serde_json::Value> for JsonMap<'json, serde_json::Value> {
     #[inline]
-    fn keys(&'json self) -> Box<dyn ExactSizeIterator<Item = &str> + 'json> {
+    fn keys(&'json self) -> Box<dyn Iterator<Item = &str> + 'json> {
         if let Some(obj) = self.as_object() {
             Box::new(obj.keys().map(AsRef::as_ref))
         } else {
@@ -15,7 +15,7 @@ impl<'json> JsonMapTrait<'json, serde_json::Value> for JsonMap<'json, serde_json
     }
 
     #[inline]
-    fn values(&'json self) -> Box<dyn ExactSizeIterator<Item = &serde_json::Value> + 'json> {
+    fn values(&'json self) -> Box<dyn Iterator<Item = &serde_json::Value> + 'json> {
         if let Some(obj) = self.as_object() {
             Box::new(obj.values())
         } else {
@@ -27,7 +27,7 @@ impl<'json> JsonMapTrait<'json, serde_json::Value> for JsonMap<'json, serde_json
     }
 
     #[inline]
-    fn items(&'json self) -> Box<dyn ExactSizeIterator<Item = (&str, &serde_json::Value)> + 'json> {
+    fn items(&'json self) -> Box<dyn Iterator<Item = (&str, &serde_json::Value)> + 'json> {
         if let Some(obj) = self.as_object() {
             Box::new(obj.iter().map(|(k, v)| (k.as_ref(), v)))
         } else {
@@ -40,7 +40,7 @@ impl<'json> JsonMapTrait<'json, serde_json::Value> for JsonMap<'json, serde_json
 }
 
 impl JsonType<serde_json::Value> for serde_json::Value {
-    fn as_array<'json>(&'json self) -> Option<Box<dyn ExactSizeIterator<Item = &Self> + 'json>> {
+    fn as_array<'json>(&'json self) -> Option<Box<dyn Iterator<Item = &Self> + 'json>> {
         if let Some(vec) = self.as_array() {
             Some(Box::new(vec.iter()))
         } else {

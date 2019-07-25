@@ -61,7 +61,7 @@ impl From<Vec<RustType>> for RustType {
 }
 
 impl JsonType<RustType> for RustType {
-    fn as_array<'json>(&'json self) -> Option<Box<dyn ExactSizeIterator<Item = &Self> + 'json>> {
+    fn as_array<'json>(&'json self) -> Option<Box<dyn Iterator<Item = &Self> + 'json>> {
         match self {
             RustType::List(v) => Some(Box::new(v.iter())),
             _ => None,
@@ -138,7 +138,7 @@ impl JsonType<RustType> for RustType {
 
 impl<'json> JsonMapTrait<'json, RustType> for JsonMap<'json, RustType> {
     #[inline]
-    fn items(&'json self) -> Box<dyn ExactSizeIterator<Item = (&str, &RustType)> + 'json> {
+    fn items(&'json self) -> Box<dyn Iterator<Item = (&str, &RustType)> + 'json> {
         if let RustType::Object(hash_map) = self.deref() {
             Box::new(hash_map.iter().map(|(k, v)| (k.as_str(), v)))
         } else {
