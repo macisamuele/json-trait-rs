@@ -1,7 +1,7 @@
 #[macro_export]
-macro_rules! testing_map {
+macro_rules! rust_type_map {
     ($($k:expr => $v: expr),*,) => {{
-        testing_map![$($k => $v),*]
+        rust_type_map![$($k => $v),*]
     }};
     ($($k: expr => $v: expr),*) => {{
         use $crate::RustType;
@@ -16,9 +16,9 @@ macro_rules! testing_map {
 }
 
 #[macro_export]
-macro_rules! testing_vec {
+macro_rules! rust_type_vec {
     ($($item: expr),*,) => {{
-        testing_vec![$($item),*]
+        rust_type_vec![$($item),*]
     }};
     ($($item: expr),*) => {{
         use $crate::RustType;
