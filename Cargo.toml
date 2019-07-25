@@ -1,5 +1,6 @@
 [package]
 authors = ["Samuele Maci <macisamuele@gmail.com>"]
+categories = ["data-structures", "development-tools", "encoding", "parsing"]
 description = "Rust interface (aka trait) to deal with objects as they are JSON objects"
 repository = "https://github.com/macisamuele/json-trait-rs"
 edition = "2018"
@@ -37,3 +38,7 @@ serde_yaml = { version = "0", optional = true }
 strum = "0"
 strum_macros = "0"
 unreachable = "1"
+
+[patch.crates-io]
+# TODO: Remove patch once https://github.com/synek317/test-case-derive/pull/5 is merged
+test-case-derive = { git = "https://github.com/macisamuele/test-case-derive", branch = "maci-allow-build-on-stable"}
