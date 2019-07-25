@@ -39,7 +39,7 @@ impl<'json> JsonMapTrait<'json, serde_yaml::Value> for JsonMap<'json, serde_yaml
     }
 }
 
-impl JsonType for serde_yaml::Value {
+impl JsonType<serde_yaml::Value> for serde_yaml::Value {
     fn as_array<'json>(&'json self) -> Option<Box<dyn ExactSizeIterator<Item = &Self> + 'json>> {
         if let Some(vec) = self.as_sequence() {
             Some(Box::new(vec.iter()))
@@ -68,7 +68,7 @@ impl JsonType for serde_yaml::Value {
         self.as_f64()
     }
 
-    fn as_object<'json>(&'json self) -> Option<JsonMap<'json, Self>>
+    fn as_object<'json>(&'json self) -> Option<JsonMap<Self>>
     where
         JsonMap<'json, Self>: JsonMapTrait<'json, Self>,
     {
@@ -83,8 +83,8 @@ impl JsonType for serde_yaml::Value {
         self.as_str()
     }
 
-    fn get_attribute<R: AsRef<str>>(&self, attribute_name: R) -> Option<&Self> {
-        self.get(attribute_name.as_ref())
+    fn get_attribute(&self, attribute_name: &str) -> Option<&Self> {
+        self.get(attribute_name)
     }
 
     fn get_index(&self, index: usize) -> Option<&Self> {
@@ -126,10 +126,7 @@ mod tests_yaml_map_trait {
 
 #[cfg(test)]
 mod tests_primitive_type_trait {
-    use crate::{
-        index::Index,
-        json_type::{EnumJsonType, JsonType},
-    };
+    use crate::json_type::{EnumJsonType, JsonType};
     use test_case_derive::test_case;
 
     #[test_case(yaml![[]], EnumJsonType::Array)]
@@ -153,14 +150,6 @@ mod tests_primitive_type_trait {
     #[test_case(yaml![[0, 1, 2]], 4, None)]
     fn test_get_index(value: serde_yaml::Value, index: usize, expected_value: Option<&serde_yaml::Value>) {
         assert_eq!(JsonType::get_index(&value, index), expected_value);
-    }
-
-    #[test_case(&yaml![{"present": 1}], "present", Some(&yaml![1]))]
-    #[test_case(&yaml![{"present": 1}], "not-present", None)]
-    #[test_case(&yaml![[0, 1, 2]], 1, Some(&yaml![1]))]
-    #[test_case(&yaml![[0, 1, 2]], 4, None)]
-    fn test_get<'json, I: Index<serde_yaml::Value>>(value: &'json serde_yaml::Value, index_value: I, expected_value: Option<&'json serde_yaml::Value>) {
-        assert_eq!(JsonType::get(value, index_value), expected_value);
     }
 
     #[test_case(yaml![{"present": 1}], "present", true)]
@@ -292,7 +281,7 @@ mod tests_primitive_type_trait {
         assert_eq!(option_as_object.is_some(), expected_value.is_some());
 
         if let Some(as_object) = option_as_object {
-            assert_eq!(as_object.deref(), expected_value.unwrap());
+            assert_eq!(as_object.deref().deref(), expected_value.unwrap());
         }
     }
 
@@ -301,5 +290,38 @@ mod tests_primitive_type_trait {
     #[test_case(yaml!["1"], Some("1"))]
     fn test_as_string(value: serde_yaml::Value, expected_value: Option<&str>) {
         assert_eq!(JsonType::as_string(&value), expected_value);
+    }
+}
+
+#[cfg(test)]
+mod json_map_tests {
+    use crate::{json_type::JsonType, JsonMapTrait};
+
+    lazy_static! {
+        static ref TESTING_MAP: serde_yaml::Value = yaml![{"key1": {"key2": 1}}];
+    }
+
+    #[test]
+    fn test_keys() {
+        let key1: &serde_yaml::Value = TESTING_MAP.get_attribute("key1").unwrap();
+        assert_eq!(JsonType::as_object(key1).unwrap().keys().map(|k| { k }).collect::<Vec<_>>(), vec![String::from("key2")],);
+    }
+
+    #[test]
+    fn test_values() {
+        let key1 = TESTING_MAP.get_attribute("key1").unwrap();
+        assert_eq!(
+            JsonType::as_object(key1).unwrap().values().map(|v| { format!("{:?}", v) }).collect::<Vec<_>>(),
+            vec![format!("{:?}", serde_yaml::Value::from(1))],
+        );
+    }
+
+    #[test]
+    fn test_items() {
+        let key1 = TESTING_MAP.get_attribute("key1").unwrap();
+        assert_eq!(
+            JsonType::as_object(key1).unwrap().items().map(|(k, v)| { format!("{} -> {:?}", k, v) }).collect::<Vec<_>>(),
+            vec![format!("key2 -> {:?}", serde_yaml::Value::from(1))],
+        );
     }
 }

@@ -60,7 +60,7 @@ impl From<Vec<RustType>> for RustType {
     }
 }
 
-impl JsonType for RustType {
+impl JsonType<RustType> for RustType {
     fn as_array<'json>(&'json self) -> Option<Box<dyn ExactSizeIterator<Item = &Self> + 'json>> {
         match self {
             RustType::List(v) => Some(Box::new(v.iter())),
@@ -100,7 +100,7 @@ impl JsonType for RustType {
         }
     }
 
-    fn as_object<'json>(&'json self) -> Option<JsonMap<'json, Self>>
+    fn as_object<'json>(&'json self) -> Option<JsonMap<Self>>
     where
         JsonMap<'json, Self>: JsonMapTrait<'json, Self>,
     {
@@ -119,9 +119,9 @@ impl JsonType for RustType {
         }
     }
 
-    fn get_attribute<R: AsRef<str>>(&self, attribute_name: R) -> Option<&Self> {
+    fn get_attribute(&self, attribute_name: &str) -> Option<&Self> {
         if let RustType::Object(object) = self {
-            object.get(attribute_name.as_ref())
+            object.get(attribute_name)
         } else {
             None
         }
@@ -214,7 +214,6 @@ mod smoke_test {
             testing_type_instance.as_object().unwrap().items().collect::<Vec<_>>(),
             vec![("attribute", &RustType::from("value"))],
         );
-        assert_eq!(testing_type_instance.get("attribute"), Some(&RustType::from("value")));
         assert_eq!(testing_type_instance.has_attribute("attribute"), true);
         assert_eq!(testing_type_instance.is_array(), false);
         assert_eq!(testing_type_instance.is_boolean(), false);
@@ -223,5 +222,45 @@ mod smoke_test {
         assert_eq!(testing_type_instance.is_number(), false);
         assert_eq!(testing_type_instance.is_object(), true);
         assert_eq!(testing_type_instance.is_string(), false);
+    }
+}
+
+#[cfg(test)]
+mod json_map_tests {
+    use crate::{
+        json_type::{JsonMapTrait, JsonType},
+        RustType,
+    };
+
+    lazy_static! {
+        static ref TESTING_MAP: RustType = rust_type_map!(
+            "key1" => rust_type_map!(
+                "key2" => 1,
+            ),
+        );
+    }
+
+    #[test]
+    fn test_keys() {
+        let key1 = TESTING_MAP.get_attribute("key1").unwrap();
+        assert_eq!(JsonType::as_object(key1).unwrap().keys().map(|k| { k }).collect::<Vec<_>>(), vec![String::from("key2")],);
+    }
+
+    #[test]
+    fn test_values() {
+        let key1 = TESTING_MAP.get_attribute("key1").unwrap();
+        assert_eq!(
+            JsonType::as_object(key1).unwrap().values().map(|v| { format!("{:?}", v) }).collect::<Vec<_>>(),
+            vec![format!("{:?}", RustType::from(1))],
+        );
+    }
+
+    #[test]
+    fn test_items() {
+        let key1 = TESTING_MAP.get_attribute("key1").unwrap();
+        assert_eq!(
+            JsonType::as_object(key1).unwrap().items().map(|(k, v)| { format!("{} -> {:?}", k, v) }).collect::<Vec<_>>(),
+            vec![format!("key2 -> {:?}", RustType::from(1))],
+        );
     }
 }

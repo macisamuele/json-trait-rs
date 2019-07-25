@@ -41,7 +41,7 @@
 
 #[macro_use]
 extern crate strum_macros;
-#[cfg(all(test, any(feature = "trait_serde_json", feature = "trait_serde_yaml", feature = "trait_json")))]
+#[cfg(test)]
 #[macro_use]
 extern crate lazy_static;
 #[cfg(all(test, any(feature = "trait_serde_json", feature = "trait_serde_yaml", feature = "trait_json")))]
@@ -54,10 +54,9 @@ extern crate serde_json;
 pub mod macros;
 
 mod fragment;
-mod index;
 mod json_type;
 mod rust_type;
 pub mod traits;
 
-pub use json_type::{EnumJsonType, JsonMap, JsonMapTrait, JsonType};
+pub use json_type::{get_fragment, EnumJsonType, JsonMap, JsonMapTrait, JsonType};
 pub use rust_type::RustType;
