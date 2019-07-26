@@ -68,9 +68,9 @@ impl JsonType<serde_json::Value> for serde_json::Value {
         self.as_f64()
     }
 
-    fn as_object<'json>(&'json self) -> Option<JsonMap<Self>>
+    fn as_object(&self) -> Option<JsonMap<Self>>
     where
-        JsonMap<'json, Self>: JsonMapTrait<'json, Self>,
+        for<'json> JsonMap<'json, Self>: JsonMapTrait<'json, Self>,
     {
         if self.is_object() {
             Some(JsonMap::new(self))
