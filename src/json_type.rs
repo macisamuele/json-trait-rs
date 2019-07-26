@@ -73,9 +73,9 @@ where
     fn as_integer(&self) -> Option<i128>;
     fn as_null(&self) -> Option<()>;
     fn as_number(&self) -> Option<f64>;
-    fn as_object<'json>(&'json self) -> Option<JsonMap<T>>
+    fn as_object(&self) -> Option<JsonMap<T>>
     where
-        JsonMap<'json, T>: JsonMapTrait<'json, T>;
+        for<'json> JsonMap<'json, T>: JsonMapTrait<'json, T>;
     fn as_string(&self) -> Option<&str>;
 
     fn get_attribute(&self, attribute_name: &str) -> Option<&T>;
@@ -107,10 +107,9 @@ where
     }
 
     #[inline]
-    fn is_object<'json>(&'json self) -> bool
+    fn is_object(&self) -> bool
     where
-        T: 'json,
-        JsonMap<'json, T>: JsonMapTrait<'json, T>,
+        for<'json> JsonMap<'json, T>: JsonMapTrait<'json, T>,
     {
         self.as_object().is_some()
     }
@@ -126,10 +125,9 @@ where
     }
 
     #[inline]
-    fn primitive_type<'json>(&'json self) -> EnumJsonType
+    fn primitive_type(&self) -> EnumJsonType
     where
-        T: 'json,
-        JsonMap<'json, T>: JsonMapTrait<'json, T>,
+        for<'json> JsonMap<'json, T>: JsonMapTrait<'json, T>,
     {
         // This might not be efficient, but it could be comfortable to quickly extract the type especially while debugging
         if self.is_array() {
@@ -185,7 +183,7 @@ where
 pub fn get_fragment<'json, T>(json_object: &'json T, fragment: &str) -> Option<&'json T>
 where
     T: JsonType<T>,
-    JsonMap<'json, T>: JsonMapTrait<'json, T>,
+    for<'_json_map> JsonMap<'_json_map, T>: JsonMapTrait<'_json_map, T>,
 {
     let mut result: Option<&T> = Some(json_object);
     for fragment_part in fragment_components_from_fragment(fragment) {

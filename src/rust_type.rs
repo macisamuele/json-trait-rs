@@ -100,9 +100,9 @@ impl JsonType<RustType> for RustType {
         }
     }
 
-    fn as_object<'json>(&'json self) -> Option<JsonMap<Self>>
+    fn as_object(&self) -> Option<JsonMap<Self>>
     where
-        JsonMap<'json, Self>: JsonMapTrait<'json, Self>,
+        for<'json> JsonMap<'json, Self>: JsonMapTrait<'json, Self>,
     {
         if let RustType::Object(_) = self {
             Some(JsonMap::new(self))
