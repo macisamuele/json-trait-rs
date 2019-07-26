@@ -1,0 +1,3 @@
+# Track on this file all the traits that are available only on nightly rust.
+# By doing so we can ensure that we do test them only on the correct environment
+trait_pyo3
