@@ -1,5 +1,4 @@
 language: rust
-rust: stable
 
 env:
   global:
@@ -13,6 +12,7 @@ matrix:
   - os: linux
     dist: xenial
     env: MAKE_TARGET=coverage
+    rust: nightly  # Running on nightly to ensure that all the traits are actually tested
     addons:
       apt:
         packages:
@@ -24,12 +24,20 @@ matrix:
         - g++
   - os: linux
     dist: xenial
-    env: MAKE_TARGET=test
+    rust: stable
+    env: MAKE_TARGET=test-all-flavours
+  - os: linux
+    dist: xenial
+    rust: nightly
+    env: MAKE_TARGET=test-all-flavours
   - os: linux
     dist: xenial
     env: MAKE_TARGET=doc
+    rust: stable
   - os: linux
     dist: xenial
+    rust: nightly-2019-07-25  # Running on nighly to ensure that all the codebase are checked by the linters)
+                              # Using an "older" nightly version due to difficulties into building rustfmt on latest nighyly
     env: MAKE_TARGET=lint
   allow_failures:
   - env: MAKE_TARGET=lint

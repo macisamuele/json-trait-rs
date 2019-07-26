@@ -18,8 +18,9 @@ endif
 define call_all_features
 set -eu && \
     ( \
-        for cargo_args in "" --no-default-features --all-features; do CARGO_ARGS="${CARGO_ARGS} $${cargo_args}" ${MAKE} $(1); done; \
-        for cargo_args in $$(bash ${CURDIR}/scripts/cargo-features.sh); do CARGO_ARGS="${CARGO_ARGS} --features $${cargo_args}" ${MAKE} $(1); done \
+        for cargo_args in "" --no-default-features; do CARGO_ARGS="${CARGO_ARGS} $${cargo_args}" ${MAKE} $(1); done; \
+        for feature in $$(bash ${CURDIR}/scripts/cargo-features.sh); do CARGO_ARGS="${CARGO_ARGS} --features '$${feature}'" ${MAKE} $(1); done; \
+        CARGO_ARGS="${CARGO_ARGS} --features '$$(bash ${CURDIR}/scripts/cargo-features.sh)'" ${MAKE} $(1); \
     )
 endef
 
@@ -53,6 +54,10 @@ bump-submodules:
 clippy:
 	touch src/lib.rs   # touch a file of the rust project to "force" cargo to recompile it so clippy will actually run
 	cargo +${RUST_TOOLCHAIN} clippy --all-targets ${CARGO_ARGS} -- -D clippy::pedantic -D clippy::nursery
+
+.PHONY: clippy-all-flavours
+clippy-all-flavours:
+	$(call call_all_features,clippy)
 
 .PHONY: pre-commit
 pre-commit: venv
