@@ -41,10 +41,8 @@ venv:
 	venv/bin/pip install --no-cache pre-commit
 
 .PHONY: clean
-clean: clean-coverage clean-docker-volumes
-	rm -rf target
-	rm -rf venv
-	rm -rf .coverage
+clean: clean-coverage
+	rm -rf target venv
 
 .PHONY: bump-submodules
 bump-submodules:
@@ -95,65 +93,31 @@ ${CODECOV_DIR}/codecov.bash:
 	mkdir -p ${CURDIR}/.coverage
 
 .PHONY: coverage
-coverage: clean-coverage .coverage ${CODECOV_DIR}/codecov.bash
-	find ${CURDIR}/target/ -name "*$$(bash scripts/cargo-project-name.sh)*" -type f -executable | xargs --no-run-if-empty rm -rf
-	RUSTFLAGS="-Clink-dead-code" CARGO_ARGS="--tests" ${MAKE} build-all-flavours
-	find target/ -maxdepth 2 -name "*$$(bash scripts/cargo-project-name.sh)*" -type f -executable | while read executable; do \
-	echo "Run $${executable}" > /dev/stderr && \
-	mkdir -p ${CURDIR}/.coverage/$$(basename $${executable}) &&  \
-	kcov --include-path=${CURDIR} --strip-path=${CURDIR} ${CURDIR}/.coverage/$$(basename $${executable}) $${executable}; \
-	done
-	find ${CURDIR}/.coverage/ -maxdepth 1 -type d -name "*$$(bash scripts/cargo-project-name.sh)*" | \
-		xargs kcov --merge ${CURDIR}/.coverage/merged/
-	[ "${TRAVIS}" = "true" ] && \
-		bash ${CODECOV_DIR}/codecov.bash -f ${CURDIR}/.coverage/merged/kcov-merged/cobertura.xml || \
+coverage: export CARGO_INCREMENTAL := 0
+coverage: export RUSTFLAGS := ${RUSTFLAGS} -Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Zno-landing-pads
+coverage: clean-coverage ${CODECOV_DIR}/codecov.bash
+	@command -v grcov @> /dev/null || (echo "grcov is not yet installed" && cargo install grcov)
+	mkdir --parent ${CURDIR}/.coverage
+	${MAKE} test-all-flavours
+	find ${CURDIR}/target -name "*$$(bash scripts/cargo-project-name.sh)*.gc*" | xargs zip -0 ${CURDIR}/.coverage/ccov.zip
+	grcov ${CURDIR}/.coverage/ccov.zip \
+		--source-dir ${CURDIR} \
+		--output-type lcov \
+		--llvm \
+		--ignore-dir "/*" \
+		--ignore-not-existing \
+		--output-file ${CURDIR}/.coverage/lcov.info
+	@[ "${TRAVIS}" = "true" ] && \
+		bash ${CODECOV_DIR}/codecov.bash -f ${CURDIR}/.coverage/lcov.info || \
 		echo "Skip codecov uploads"
 
-# Docker support
-# The support is mostly needed to be able to run coverage tools on non Linux systems (ie. Mac OS)
-REPO_NAME := $(shell basename ${CURDIR} | tr A-Z a-z)
-GIT_SHA := $(shell git rev-parse HEAD 2> /dev/null || echo "no-sha")
-DOCKER_PREFIX := ${REPO_NAME}
-
-.PHONY: docker-container-build
-docker-container-build:
-	docker build -t ${REPO_NAME}:${GIT_SHA} .
-
-.PHONY: docker-volumes-create
-docker-volumes-create:
-	docker volume create ${DOCKER_PREFIX}_registry
-	docker volume create ${DOCKER_PREFIX}_target
-	docker volume create ${DOCKER_PREFIX}_sccache
-
-.PHONY: clean-docker-volumes
-clean-docker-volumes:
-	docker volume rm ${DOCKER_PREFIX}_registry ${DOCKER_PREFIX}_target ${DOCKER_PREFIX}_sccache
-
-.PHONY: start-container
-docker-start: docker-container-build docker-volumes-create
-	docker run \
-		--env RUST_BACKTRACE=full \
-		--interactive \
-		--privileged \
-		--rm \
-		--volume ${CURDIR}/.coverage:/code/.coverage \
-		--volume ${CURDIR}/Cargo.toml:/code/Cargo.toml:ro \
-		--volume ${CURDIR}/Makefile:/code/Makefile:ro \
-		--volume ${CURDIR}/src/:/code/src/:ro \
-		--volume ${CURDIR}/scripts/:/code/scripts/:ro \
-		--volume ${DOCKER_PREFIX}_registry:/root/.cargo/registry \
-		--volume ${DOCKER_PREFIX}_target:/code/target \
-		--tty \
-		${REPO_NAME}:${GIT_SHA} \
-		${CONTAINER_COMMAND}
+coverage-html: coverage
+	command -v genhtml @> /dev/null || (echo "genhtml is not yet installed. Please install lcov (https://github.com/linux-test-project/lcov) tools"; exit 1)
+	genhtml -o ${CURDIR}/.coverage/report/ --show-details --highlight --ignore-errors source --legend ${CURDIR}/.coverage/lcov.info
 
 .PHONY: clean-coverage
 clean-coverage:
-	rm -rf ${CURDIR}/.coverage/*
-
-.PHONY: coverage-in-container
-coverage-in-container: clean-coverage .coverage
-	CONTAINER_COMMAND='make coverage' ${MAKE} docker-start
+	rm -rf ${CURDIR}/.coverage
 
 .PHONY: expand-macros
 expand-macros:

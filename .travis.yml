@@ -46,7 +46,6 @@ cache:
   timeout: 3600
   directories:
   - ${HOME}/.cache/pre-commit
-  - ${KCOV_DIR}
   - ${CODECOV_DIR}
   - ${HOME}/.cargo/
   - ${TRAVIS_BUILD_DIR}/target
