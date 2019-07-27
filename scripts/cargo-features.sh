@@ -4,7 +4,7 @@ set -euo pipefail -o posix -o functrace
 if echo "${RUST_TOOLCHAIN:-stable}" | grep --quiet "^nightly" ; then
     features_to_ignore=""
 else
-    features_to_ignore="$(grep -v '#' features-enabled-on-nightly-only)"
+    features_to_ignore="$(grep -v '#' features-enabled-on-nightly-only 2> /dev/null || true)"
     echo "Ignoring the following features as they are available only on nightly rust: ${features_to_ignore}" > /dev/stderr
 fi
 

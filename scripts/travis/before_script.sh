@@ -8,5 +8,4 @@ rustup --version
 rustup show
 rustc --version --verbose
 cargo --version --verbose
-if [[ ${MAKE_TARGET} = "coverage" ]]; then cargo kcov --version; fi
-if [[ ${MAKE_TARGET} = "coverage" ]]; then kcov --version; fi
+if [[ ${MAKE_TARGET} = "coverage" ]]; then grcov --version; fi

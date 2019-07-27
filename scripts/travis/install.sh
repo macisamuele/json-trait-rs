@@ -12,30 +12,16 @@ install_make() {
 
 install_kcov() {
   if [[ ${MAKE_TARGET} == "coverage" ]]; then
-    if [[ "${KCOV_DIR:-}" == "" ]]; then
-        KCOV_DIR="$(mktemp -d)"
-    fi
-    mkdir -p "${KCOV_DIR}"
-    pushd "${KCOV_DIR}"
-    if command -v cargo-kcov &> /dev/null; then
-        echo "# Skipping cargo-kcov as already present"
-    else
-        # TODO: use `cargo install cargo-kcov once https://github.com/kennytm/cargo-kcov/issues/41 is closed
-        cargo install --git https://github.com/kennytm/cargo-kcov cargo-kcov
-    fi
-    if command -v kcov &> /dev/null; then
-        echo "# Skipping kcov install as already present"
-    else
-        cargo kcov --print-install-kcov-sh | PARALLEL_BUILD=enabled sh
-    fi
-    if [[ "${TRAVIS_OS_NAME}" == "linux" ]]; then
-      # Make sure that we could run kcov tool on linux
-      sudo sh -c "echo 0 > /proc/sys/kernel/yama/ptrace_scope"
-    fi
-    pip install --no-cache-dir --user coverage
-    popd
-  else
-    echo "# Skipping kcov install as target is not coverage" > /dev/stderr
+    GITHUB_GRCOV="https://api.github.com/repos/mozilla/grcov/releases/latest"
+    GRCOV_DEFAULT_VERSION="v0.5.1"
+    if [[ ${TRAVIS_OS_NAME} == "windows" ]]; then OS_NAME="win"; else OS_NAME=${TRAVIS_OS_NAME}; fi
+
+    # Usage: download and install the latest kcov version by default.
+    # Fall back to ${KCOV_DEFAULT_VERSION} from the kcov archive if the latest is unavailable.
+    GRCOV_VERSION=$(curl --silent --show-error --fail ${GITHUB_GRCOV} | jq -Mr .tag_name || echo)
+    GRCOV_VERSION=${GRCOV_VERSION:-${GRCOV_DEFAULT_VERSION}}
+    GRCOV_TAR_BZ2="https://github.com/mozilla/grcov/releases/download/${GRCOV_VERSION}/grcov-${OS_NAME}-x86_64.tar.bz2"
+    curl -L --retry 3 "${GRCOV_TAR_BZ2}" | tar xjf - -C "${CARGO_HOME:-${HOME}/.cargo/bin}"
   fi
 }
 

@@ -13,15 +13,6 @@ matrix:
     dist: xenial
     env: MAKE_TARGET=coverage
     rust: nightly  # Running on nightly to ensure that all the traits are actually tested
-    addons:
-      apt:
-        packages:
-        - libcurl4-openssl-dev
-        - libelf-dev
-        - libdw-dev
-        - binutils-dev
-        - libiberty-dev
-        - g++
   - os: linux
     dist: xenial
     rust: stable
@@ -55,7 +46,6 @@ cache:
   timeout: 3600
   directories:
   - ${HOME}/.cache/pre-commit
-  - ${KCOV_DIR}
   - ${CODECOV_DIR}
   - ${HOME}/.cargo/
   - ${TRAVIS_BUILD_DIR}/target

@@ -1,7 +1,6 @@
 /**/*.rs.bk
 /.coverage/
 /.idea/
-/.lcov.info
 /Cargo.lock
 /codecov.bash
 /target/
