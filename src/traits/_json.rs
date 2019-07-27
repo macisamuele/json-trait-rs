@@ -5,20 +5,17 @@ use std::ops::Index;
 impl<'json> JsonMapTrait<'json, json::JsonValue> for JsonMap<'json, json::JsonValue> {
     #[inline]
     fn keys(&'json self) -> Box<dyn Iterator<Item = &str> + 'json> {
-        // TODO: remove .collect().into_iter() once https://github.com/maciejhirsz/json-rust/pull/156 is merged
-        Box::new(self.entries().map(|(key, _)| key).collect::<Vec<_>>().into_iter())
+        Box::new(self.entries().map(|(key, _)| key))
     }
 
     #[inline]
     fn values(&'json self) -> Box<dyn Iterator<Item = &json::JsonValue> + 'json> {
-        // TODO: remove .collect().into_iter() once https://github.com/maciejhirsz/json-rust/pull/156 is merged
-        Box::new(self.entries().map(|(_, value)| value).collect::<Vec<_>>().into_iter())
+        Box::new(self.entries().map(|(_, value)| value))
     }
 
     #[inline]
     fn items(&'json self) -> Box<dyn Iterator<Item = (&str, &json::JsonValue)> + 'json> {
-        // TODO: remove .collect().into_iter() once https://github.com/maciejhirsz/json-rust/pull/156 is merged
-        Box::new(self.entries().collect::<Vec<_>>().into_iter())
+        Box::new(self.entries())
     }
 }
 
