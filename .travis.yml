@@ -8,7 +8,6 @@ env:
 
 matrix:
   include:
-  # TODO: add osx and windows testing environments
   - os: linux
     dist: xenial
     env: MAKE_TARGET=coverage
@@ -21,17 +20,31 @@ matrix:
     dist: xenial
     rust: nightly
     env: MAKE_TARGET=test-all-flavours
+  - os: osx
+    rust: stable
+    env: MAKE_TARGET=test-all-flavours
+  - os: osx
+    rust: nightly
+    env: MAKE_TARGET=test-all-flavours
+  - os: windows
+    rust: stable
+    env: MAKE_TARGET=test-all-flavours
+#  - os: windows  # TODO: run tests on nighly to ensure that pyo3 feature works on windows as well
+#    rust: nightly
+#    env: MAKE_TARGET=test-all-flavours PYTHON_SYS_EXECUTABLE=/C/Python37/python.exe
   - os: linux
     dist: xenial
     env: MAKE_TARGET=doc
     rust: stable
   - os: linux
     dist: xenial
-    rust: nightly-2019-07-25  # Running on nighly to ensure that all the codebase are checked by the linters)
+    rust: nightly-2019-07-19  # Running on nighly to ensure that all the codebase are checked by the linters)
                               # Using an "older" nightly version due to difficulties into building rustfmt on latest nighyly
     env: MAKE_TARGET=lint
   allow_failures:
   - env: MAKE_TARGET=lint
+  - os: osx
+  - os: windows
 
 install:
 - bash scripts/travis/install.sh
@@ -49,6 +62,7 @@ cache:
   - ${CODECOV_DIR}
   - ${HOME}/.cargo/
   - ${TRAVIS_BUILD_DIR}/target
+  - /C/ProgramData/chocolatey
 
 # notifications:
 #   email: false

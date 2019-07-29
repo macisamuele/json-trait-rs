@@ -6,7 +6,14 @@ set -euo pipefail -o posix -o functrace
 install_make() {
   # Install make on windows
   if [[ "${TRAVIS_OS_NAME}" == "windows" ]]; then
-      choco install make
+    choco install make
+  fi
+}
+
+install_python() {
+  # Install python on windows
+  if [[ "${TRAVIS_OS_NAME}" == "windows" ]]; then
+    choco install python --version "${PYTHON_VERSION:-3.7.4}"
   fi
 }
 
@@ -30,22 +37,22 @@ install_lint_tools() {
   if [[ ${MAKE_TARGET} == "lint" ]]; then
     pip install --no-cache-dir --user pre-commit
     if rustup component list --toolchain="${TRAVIS_RUST_VERSION}" | grep installed | grep -q rustfmt; then
-        echo "# Skipping rustfmt install as already present"
+      echo "# Skipping rustfmt install as already present"
     else
-        rustup component add rustfmt --toolchain="${TRAVIS_RUST_VERSION}"
+      rustup component add rustfmt --toolchain="${TRAVIS_RUST_VERSION}"
     fi
     if rustup component list --toolchain="${TRAVIS_RUST_VERSION}" | grep installed | grep -q clippy; then
-        echo "# Skipping clippy install as already present"
+      echo "# Skipping clippy install as already present"
     else
-        # Workaround in case clippy is not available in the current nightly release (https://github.com/rust-lang/rust-clippy#travis-ci)
-        rustup component add clippy --toolchain="${TRAVIS_RUST_VERSION}" || cargo +"${TRAVIS_RUST_VERSION}" install --git https://github.com/rust-lang/rust-clippy/ --force clippy
+      # Workaround in case clippy is not available in the current nightly release (https://github.com/rust-lang/rust-clippy#travis-ci)
+      rustup component add clippy --toolchain="${TRAVIS_RUST_VERSION}" || cargo +"${TRAVIS_RUST_VERSION}" install --git https://github.com/rust-lang/rust-clippy/ --force clippy
     fi
-
   else
     echo "# Skipping lint-tools install as target is not coverage" > /dev/stderr
   fi
 }
 
 install_make
+install_python
 install_kcov
 install_lint_tools
