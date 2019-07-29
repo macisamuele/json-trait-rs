@@ -29,9 +29,9 @@ matrix:
   - os: windows
     rust: stable
     env: MAKE_TARGET=test-all-flavours
-#  - os: windows  # TODO: run tests on nighly to ensure that pyo3 feature works on windows as well
-#    rust: nightly
-#    env: MAKE_TARGET=test-all-flavours PYTHON_SYS_EXECUTABLE=/C/Python37/python.exe
+  - os: windows
+    rust: nightly
+    env: MAKE_TARGET=test-all-flavours PYTHON_SYS_EXECUTABLE=/C/Python37/python.exe PATH=${PATH}:/C/Python37/:/C/Python37/Scripts
   - os: linux
     dist: xenial
     env: MAKE_TARGET=doc
