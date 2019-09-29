@@ -24,7 +24,7 @@ impl<'json> JsonMapTrait<'json, PyAny> for JsonMap<'json, PyAny> {
 
     fn items(&'json self) -> Box<dyn Iterator<Item = (&str, &PyAny)> + 'json> {
         match PyTryInto::<PyDict>::try_into(self.deref()) {
-            Ok(python_dict) => Box::new(python_dict.iter().filter_map(|(k, v)| k.as_string().and_then(|k_string| Some((k_string, v))).or(None))),
+            Ok(python_dict) => Box::new(python_dict.iter().filter_map(|(k, v)| k.as_string().map(|k_string| (k_string, v)).or(None))),
             Err(_) => Box::new(Vec::with_capacity(0).into_iter()),
         }
     }
@@ -89,7 +89,7 @@ impl JsonType<PyAny> for PyAny {
     where
         for<'json> JsonMap<'json, Self>: JsonMapTrait<'json, Self>,
     {
-        PyTryInto::<PyDict>::try_into(self).ok().and_then(|_| Some(JsonMap::new(self)))
+        PyTryInto::<PyDict>::try_into(self).ok().map(|_| JsonMap::new(self))
     }
 
     fn as_string(&self) -> Option<&str> {
@@ -97,13 +97,19 @@ impl JsonType<PyAny> for PyAny {
     }
 
     fn get_attribute(&self, attribute_name: &str) -> Option<&Self> {
-        PyTryInto::<PyDict>::try_into(self).ok().and_then(|python_dict| python_dict.get_item(attribute_name))
+        if let Ok(python_dict) = PyTryInto::<PyDict>::try_into(self) {
+            return (python_dict as &PyDict).get_item(attribute_name);
+        }
+        None
     }
 
     fn get_index(&self, index: usize) -> Option<&Self> {
-        TryInto::<isize>::try_into(index)
-            .ok()
-            .and_then(|idx| PyTryInto::<PySequence>::try_into(self).ok().and_then(|python_sequence| python_sequence.get_item(idx).ok()))
+        if let Ok(idx) = TryInto::<isize>::try_into(index) {
+            if let Ok(python_sequence) = PyTryInto::<PySequence>::try_into(self) {
+                return python_sequence.get_item(idx).ok();
+            }
+        }
+        None
     }
 }
 
@@ -166,7 +172,7 @@ mod tests_primitive_type_trait {
         json_type::{EnumJsonType, JsonType},
         traits::_pyo3::perform_python_check,
     };
-    use test_case_derive::test_case;
+    use test_case::test_case;
 
     #[test_case("[]", EnumJsonType::Array)]
     #[test_case("True", EnumJsonType::Boolean)]
@@ -217,9 +223,7 @@ mod tests_primitive_type_trait {
     #[test_case("{'key': 'value'}", false)]
     #[test_case("'string'", false)]
     fn test_is_array(python_code_string: &str, expected_value: bool) {
-        perform_python_check(python_code_string, |python_object_ref| {
-            assert_eq!(JsonType::is_array(python_object_ref), expected_value);
-        })
+        perform_python_check(python_code_string, |python_object_ref| assert_eq!(JsonType::is_array(python_object_ref), expected_value))
     }
 
     #[test_case("[0, 1, 2]", false)]
@@ -230,9 +234,7 @@ mod tests_primitive_type_trait {
     #[test_case("{'key': 'value'}", false)]
     #[test_case("'string'", false)]
     fn test_is_boolean(python_code_string: &str, expected_value: bool) {
-        perform_python_check(python_code_string, |python_object_ref| {
-            assert_eq!(JsonType::is_boolean(python_object_ref), expected_value);
-        })
+        perform_python_check(python_code_string, |python_object_ref| assert_eq!(JsonType::is_boolean(python_object_ref), expected_value))
     }
 
     #[test_case("[0, 1, 2]", false)]
@@ -243,9 +245,7 @@ mod tests_primitive_type_trait {
     #[test_case("{'key': 'value'}", false)]
     #[test_case("'string'", false)]
     fn test_is_integer(python_code_string: &str, expected_value: bool) {
-        perform_python_check(python_code_string, |python_object_ref| {
-            assert_eq!(JsonType::is_integer(python_object_ref), expected_value);
-        })
+        perform_python_check(python_code_string, |python_object_ref| assert_eq!(JsonType::is_integer(python_object_ref), expected_value))
     }
 
     #[test_case("[0, 1, 2]", false)]
@@ -256,9 +256,7 @@ mod tests_primitive_type_trait {
     #[test_case("{'key': 'value'}", false)]
     #[test_case("'string'", false)]
     fn test_is_null(python_code_string: &str, expected_value: bool) {
-        perform_python_check(python_code_string, |python_object_ref| {
-            assert_eq!(JsonType::is_null(python_object_ref), expected_value);
-        })
+        perform_python_check(python_code_string, |python_object_ref| assert_eq!(JsonType::is_null(python_object_ref), expected_value))
     }
 
     #[test_case("[0, 1, 2]", false)]
@@ -269,9 +267,7 @@ mod tests_primitive_type_trait {
     #[test_case("{'key': 'value'}", false)]
     #[test_case("'string'", false)]
     fn test_is_number(python_code_string: &str, expected_value: bool) {
-        perform_python_check(python_code_string, |python_object_ref| {
-            assert_eq!(JsonType::is_number(python_object_ref), expected_value);
-        })
+        perform_python_check(python_code_string, |python_object_ref| assert_eq!(JsonType::is_number(python_object_ref), expected_value))
     }
 
     #[test_case("[0, 1, 2]", false)]
@@ -282,9 +278,7 @@ mod tests_primitive_type_trait {
     #[test_case("{'key': 'value'}", true)]
     #[test_case("'string'", false)]
     fn test_is_object(python_code_string: &str, expected_value: bool) {
-        perform_python_check(python_code_string, |python_object_ref| {
-            assert_eq!(JsonType::is_object(python_object_ref), expected_value);
-        })
+        perform_python_check(python_code_string, |python_object_ref| assert_eq!(JsonType::is_object(python_object_ref), expected_value))
     }
 
     #[test_case("[0, 1, 2]", false)]
@@ -295,53 +289,41 @@ mod tests_primitive_type_trait {
     #[test_case("{'key': 'value'}", false)]
     #[test_case("'string'", true)]
     fn test_is_string(python_code_string: &str, expected_value: bool) {
-        perform_python_check(python_code_string, |python_object_ref| {
-            assert_eq!(JsonType::is_string(python_object_ref), expected_value);
-        })
+        perform_python_check(python_code_string, |python_object_ref| assert_eq!(JsonType::is_string(python_object_ref), expected_value))
     }
 
     #[test_case("[1]", true)]
     #[test_case("[1, 'a']", true)]
     #[test_case("None", false)]
     fn test_as_array(python_code_string: &str, is_some: bool) {
-        perform_python_check(python_code_string, |python_object_ref| {
-            assert_eq!(JsonType::as_array(python_object_ref).is_some(), is_some);
-        })
+        perform_python_check(python_code_string, |python_object_ref| assert_eq!(JsonType::as_array(python_object_ref).is_some(), is_some))
     }
 
     #[test_case("True", Some(true))]
     #[test_case("False", Some(false))]
     #[test_case("1", None)]
     fn test_as_boolean(python_code_string: &str, expected_value: Option<bool>) {
-        perform_python_check(python_code_string, |python_object_ref| {
-            assert_eq!(JsonType::as_boolean(python_object_ref), expected_value);
-        })
+        perform_python_check(python_code_string, |python_object_ref| assert_eq!(JsonType::as_boolean(python_object_ref), expected_value))
     }
 
     #[test_case("1", Some(1))]
     #[test_case("1.2", None)]
     #[test_case("'1'", None)]
     fn test_as_integer(python_code_string: &str, expected_value: Option<i128>) {
-        perform_python_check(python_code_string, |python_object_ref| {
-            assert_eq!(JsonType::as_integer(python_object_ref), expected_value);
-        })
+        perform_python_check(python_code_string, |python_object_ref| assert_eq!(JsonType::as_integer(python_object_ref), expected_value))
     }
 
     #[test_case("None", Some(()))]
     #[test_case("'1'", None)]
     fn test_as_null(python_code_string: &str, expected_value: Option<()>) {
-        perform_python_check(python_code_string, |python_object_ref| {
-            assert_eq!(JsonType::as_null(python_object_ref), expected_value);
-        })
+        perform_python_check(python_code_string, |python_object_ref| assert_eq!(JsonType::as_null(python_object_ref), expected_value))
     }
 
     #[test_case("1", Some(1_f64))]
     #[test_case("1.2", Some(1.2))]
     #[test_case("'1'", None)]
     fn test_as_number(python_code_string: &str, expected_value: Option<f64>) {
-        perform_python_check(python_code_string, |python_object_ref| {
-            assert_eq!(JsonType::as_number(python_object_ref), expected_value);
-        })
+        perform_python_check(python_code_string, |python_object_ref| assert_eq!(JsonType::as_number(python_object_ref), expected_value))
     }
 
     #[test_case("1", false)]
@@ -357,9 +339,7 @@ mod tests_primitive_type_trait {
     #[test_case("1.2", None)]
     #[test_case("'1'", Some("1"))]
     fn test_as_string(python_code_string: &str, expected_value: Option<&str>) {
-        perform_python_check(python_code_string, |python_object_ref| {
-            assert_eq!(JsonType::as_string(python_object_ref), expected_value);
-        })
+        perform_python_check(python_code_string, |python_object_ref| assert_eq!(JsonType::as_string(python_object_ref), expected_value))
     }
 }
 
@@ -375,7 +355,7 @@ mod json_map_tests {
     fn test_keys() {
         perform_python_check(&PYTHON_TESTING_MAP_STR, |python_object_ref| {
             let key1 = python_object_ref.get_attribute("key1").unwrap();
-            assert_eq!(JsonType::as_object(key1).unwrap().keys().map(|k| { k }).collect::<Vec<_>>(), vec![String::from("key2")],);
+            assert_eq!(JsonType::as_object(key1).unwrap().keys().collect::<Vec<_>>(), vec![String::from("key2")]);
         });
     }
 
@@ -384,8 +364,8 @@ mod json_map_tests {
         perform_python_check(&PYTHON_TESTING_MAP_STR, |python_object_ref| {
             let key1 = python_object_ref.get_attribute("key1").unwrap();
             assert_eq!(
-                JsonType::as_object(key1).unwrap().values().map(|v| { format!("{:?}", v) }).collect::<Vec<_>>(),
-                vec![1.to_string()],
+                JsonType::as_object(key1).unwrap().values().map(|v| format!("{:?}", v)).collect::<Vec<_>>(),
+                vec![String::from("1")],
             );
         });
     }
@@ -395,8 +375,8 @@ mod json_map_tests {
         perform_python_check(&PYTHON_TESTING_MAP_STR, |python_object_ref| {
             let key1 = python_object_ref.get_attribute("key1").unwrap();
             assert_eq!(
-                JsonType::as_object(key1).unwrap().items().map(|(k, v)| { format!("{} -> {:?}", k, v) }).collect::<Vec<_>>(),
-                vec!["key2 -> 1".to_string()],
+                JsonType::as_object(key1).unwrap().items().map(|(k, v)| format!("{} -> {:?}", k, v)).collect::<Vec<_>>(),
+                vec![String::from("key2 -> 1")],
             );
         });
     }

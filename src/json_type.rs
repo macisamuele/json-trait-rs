@@ -20,26 +20,26 @@ impl EnumJsonType {
         Self: Sized,
     {
         match type_string {
-            "array" => Some(EnumJsonType::Array),
-            "boolean" => Some(EnumJsonType::Boolean),
-            "integer" => Some(EnumJsonType::Integer),
-            "null" => Some(EnumJsonType::Null),
-            "number" => Some(EnumJsonType::Number),
-            "object" => Some(EnumJsonType::Object),
-            "string" => Some(EnumJsonType::String),
+            "array" => Some(Self::Array),
+            "boolean" => Some(Self::Boolean),
+            "integer" => Some(Self::Integer),
+            "null" => Some(Self::Null),
+            "number" => Some(Self::Number),
+            "object" => Some(Self::Object),
+            "string" => Some(Self::String),
             _ => None,
         }
     }
 
     pub fn to_type(&self) -> &str {
         match self {
-            EnumJsonType::Array => "array",
-            EnumJsonType::Boolean => "boolean",
-            EnumJsonType::Integer => "integer",
-            EnumJsonType::Null => "null",
-            EnumJsonType::Number => "number",
-            EnumJsonType::Object => "object",
-            EnumJsonType::String => "string",
+            Self::Array => "array",
+            Self::Boolean => "boolean",
+            Self::Integer => "integer",
+            Self::Null => "null",
+            Self::Number => "number",
+            Self::Object => "object",
+            Self::String => "string",
         }
     }
 }
@@ -190,7 +190,7 @@ where
         if let Some(value) = result {
             result = match value.primitive_type() {
                 EnumJsonType::Object => value.get_attribute(fragment_part.as_str()),
-                EnumJsonType::Array => fragment_part.parse::<usize>().and_then(|index| Ok(value.get_index(index))).ok().unwrap_or(None),
+                EnumJsonType::Array => fragment_part.parse::<usize>().map(|index| value.get_index(index)).ok().unwrap_or(None),
                 _ => None,
             };
         }
@@ -202,7 +202,7 @@ where
 mod tests {
     use super::{get_fragment, EnumJsonType, JsonType};
     use crate::rust_type::RustType;
-    use test_case_derive::test_case;
+    use test_case::test_case;
 
     #[test_case("array", Some(EnumJsonType::Array))]
     #[test_case("integer", Some(EnumJsonType::Integer))]
@@ -230,15 +230,15 @@ mod tests {
         let _: Option<Box<dyn JsonType<RustType>>> = None;
     }
 
-    #[test_case("", Some(&rust_type_map!["key" => rust_type_map!["inner_key" => rust_type_vec![1, "2"]]]))]
-    #[test_case("/key", Some(&rust_type_map!["inner_key" => rust_type_vec![1, "2"]]))]
-    #[test_case("/key/inner_key", Some(&rust_type_vec![1,"2"]))]
-    #[test_case("/key/inner_key/0", Some(&RustType::from(1)))]
-    #[test_case("/key/inner_key/1", Some(&RustType::from("2")))]
+    #[test_case("", Some(rust_type_map!["key" => rust_type_map!["inner_key" => rust_type_vec![1, "2"]]]))]
+    #[test_case("/key", Some(rust_type_map!["inner_key" => rust_type_vec![1, "2"]]))]
+    #[test_case("/key/inner_key", Some(rust_type_vec![1,"2"]))]
+    #[test_case("/key/inner_key/0", Some(RustType::from(1)))]
+    #[test_case("/key/inner_key/1", Some(RustType::from("2")))]
     #[test_case("/not_present", None)]
     #[test_case("/key/inner_key/a", None)]
     #[test_case("/key/inner_key/2", None)]
-    fn test_get_fragment(fragment: &str, expected_value: Option<&RustType>) {
+    fn test_get_fragment(fragment: &str, expected_value: Option<RustType>) {
         let external_map = rust_type_map![
             "key" => rust_type_map![
                 "inner_key" => rust_type_vec![
@@ -247,6 +247,6 @@ mod tests {
                 ],
             ],
         ];
-        assert_eq!(get_fragment(&external_map, fragment), expected_value);
+        assert_eq!(get_fragment(&external_map, fragment), expected_value.as_ref());
     }
 }

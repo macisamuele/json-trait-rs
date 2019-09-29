@@ -14,7 +14,7 @@ pub(in crate) fn fragment_components_from_fragment(fragment: &str) -> impl Itera
 #[cfg(test)]
 mod tests {
     use super::fragment_components_from_fragment;
-    use test_case_derive::test_case;
+    use test_case::test_case;
 
     #[test_case("", vec![])]
     #[test_case("p1", vec!["p1"])]
