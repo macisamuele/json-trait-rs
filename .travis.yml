@@ -38,7 +38,7 @@ matrix:
     rust: stable
   - os: linux
     dist: xenial
-    rust: nightly-2019-07-19  # Running on nighly to ensure that all the codebase are checked by the linters)
+    rust: nightly-2019-09-28  # Running on nighly to ensure that all the codebase are checked by the linters)
                               # Using an "older" nightly version due to difficulties into building rustfmt on latest nighyly
     env: MAKE_TARGET=lint
   allow_failures:

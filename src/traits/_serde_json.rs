@@ -240,7 +240,7 @@ mod tests_primitive_type_trait {
     #[test_case(json![[1, "a"]], Some(vec![json![1], json!["a"]]))]
     #[test_case(json![null], None)]
     fn test_as_array(value: serde_json::Value, expected_value: Option<Vec<serde_json::Value>>) {
-        assert_eq!(JsonType::as_array(&value).and_then(|iterator| Some(iterator.cloned().collect())), expected_value);
+        assert_eq!(JsonType::as_array(&value).map(|iterator| iterator.cloned().collect()), expected_value);
     }
 
     #[test_case(json![true], Some(true))]
@@ -311,7 +311,7 @@ mod json_map_tests {
     fn test_values() {
         let key1 = TESTING_MAP.get_attribute("key1").unwrap();
         assert_eq!(
-            JsonType::as_object(key1).unwrap().values().map(|v| { format!("{:?}", v) }).collect::<Vec<_>>(),
+            JsonType::as_object(key1).unwrap().values().map(|v| format!("{:?}", v)).collect::<Vec<_>>(),
             vec![format!("{:?}", serde_json::Value::from(1))],
         );
     }
@@ -320,7 +320,7 @@ mod json_map_tests {
     fn test_items() {
         let key1 = TESTING_MAP.get_attribute("key1").unwrap();
         assert_eq!(
-            JsonType::as_object(key1).unwrap().items().map(|(k, v)| { format!("{} -> {:?}", k, v) }).collect::<Vec<_>>(),
+            JsonType::as_object(key1).unwrap().items().map(|(k, v)| format!("{} -> {:?}", k, v)).collect::<Vec<_>>(),
             vec![format!("key2 -> {:?}", serde_json::Value::from(1))],
         );
     }

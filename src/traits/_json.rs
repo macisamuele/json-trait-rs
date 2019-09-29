@@ -76,7 +76,7 @@ impl JsonType<json::JsonValue> for json::JsonValue {
 
     fn get_attribute(&self, attribute_name: &str) -> Option<&Self> {
         let extracted_value = self.index(attribute_name);
-        if let json::JsonValue::Null = extracted_value {
+        if let Self::Null = extracted_value {
             None
         } else {
             Some(extracted_value)
@@ -85,7 +85,7 @@ impl JsonType<json::JsonValue> for json::JsonValue {
 
     fn get_index(&self, index: usize) -> Option<&Self> {
         let extracted_value = self.index(index);
-        if let json::JsonValue::Null = extracted_value {
+        if let Self::Null = extracted_value {
             None
         } else {
             Some(extracted_value)
@@ -242,7 +242,7 @@ mod tests_primitive_type_trait {
     #[test_case(rust_json![[1, "a"]], Some(vec![rust_json![1], rust_json!["a"]]))]
     #[test_case(rust_json![null], None)]
     fn test_as_array(value: json::JsonValue, expected_value: Option<Vec<json::JsonValue>>) {
-        assert_eq!(JsonType::as_array(&value).and_then(|iterator| Some(iterator.cloned().collect())), expected_value);
+        assert_eq!(JsonType::as_array(&value).map(|iterator| iterator.cloned().collect()), expected_value);
     }
 
     #[test_case(rust_json![true], Some(true))]
@@ -313,7 +313,7 @@ mod json_map_tests {
     fn test_values() {
         let key1 = TESTING_MAP.get_attribute("key1").unwrap();
         assert_eq!(
-            JsonType::as_object(key1).unwrap().values().map(|v| { format!("{:?}", v) }).collect::<Vec<_>>(),
+            JsonType::as_object(key1).unwrap().values().map(|v| format!("{:?}", v)).collect::<Vec<_>>(),
             vec![format!("{:?}", json::JsonValue::from(1))],
         );
     }
@@ -322,7 +322,7 @@ mod json_map_tests {
     fn test_items() {
         let key1 = TESTING_MAP.get_attribute("key1").unwrap();
         assert_eq!(
-            JsonType::as_object(key1).unwrap().items().map(|(k, v)| { format!("{} -> {:?}", k, v) }).collect::<Vec<_>>(),
+            JsonType::as_object(key1).unwrap().items().map(|(k, v)| format!("{} -> {:?}", k, v)).collect::<Vec<_>>(),
             vec![format!("key2 -> {:?}", json::JsonValue::from(1))],
         );
     }

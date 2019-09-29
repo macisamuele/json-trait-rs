@@ -14,62 +14,63 @@ pub enum RustType {
 
 impl Default for RustType {
     fn default() -> Self {
-        RustType::Null
+        Self::Null
     }
 }
 
 impl From<()> for RustType {
     fn from(_: ()) -> Self {
-        RustType::Null
+        Self::Null
     }
 }
 
 impl From<bool> for RustType {
     fn from(value: bool) -> Self {
-        RustType::Boolean(value)
+        Self::Boolean(value)
     }
 }
 
 impl From<&str> for RustType {
     fn from(value: &str) -> Self {
-        RustType::String(String::from(value))
+        Self::String(String::from(value))
     }
 }
 
 impl From<String> for RustType {
     fn from(value: String) -> Self {
-        RustType::String(value)
+        Self::String(value)
     }
 }
 
 impl From<i32> for RustType {
     fn from(value: i32) -> Self {
-        RustType::Integer(value)
+        Self::Integer(value)
     }
 }
 
 impl From<HashMap<String, RustType>> for RustType {
     fn from(value: HashMap<String, Self>) -> Self {
-        RustType::Object(value)
+        Self::Object(value)
     }
 }
 
 impl From<Vec<RustType>> for RustType {
     fn from(value: Vec<Self>) -> Self {
-        RustType::List(value)
+        Self::List(value)
     }
 }
 
 impl JsonType<RustType> for RustType {
     fn as_array<'json>(&'json self) -> Option<Box<dyn Iterator<Item = &Self> + 'json>> {
-        match self {
-            RustType::List(v) => Some(Box::new(v.iter())),
-            _ => None,
+        if let Self::List(v) = self {
+            Some(Box::new(v.iter()))
+        } else {
+            None
         }
     }
 
     fn as_boolean(&self) -> Option<bool> {
-        if let RustType::Boolean(v) = self {
+        if let Self::Boolean(v) = self {
             Some(*v)
         } else {
             None
@@ -77,7 +78,7 @@ impl JsonType<RustType> for RustType {
     }
 
     fn as_integer(&self) -> Option<i128> {
-        if let RustType::Integer(v) = self {
+        if let Self::Integer(v) = self {
             Some(i128::from(*v))
         } else {
             None
@@ -85,7 +86,7 @@ impl JsonType<RustType> for RustType {
     }
 
     fn as_null(&self) -> Option<()> {
-        if let RustType::Null = self {
+        if let Self::Null = self {
             Some(())
         } else {
             None
@@ -93,7 +94,7 @@ impl JsonType<RustType> for RustType {
     }
 
     fn as_number(&self) -> Option<f64> {
-        if let RustType::Integer(v) = self {
+        if let Self::Integer(v) = self {
             Some(f64::from(*v))
         } else {
             None
@@ -104,7 +105,7 @@ impl JsonType<RustType> for RustType {
     where
         for<'json> JsonMap<'json, Self>: JsonMapTrait<'json, Self>,
     {
-        if let RustType::Object(_) = self {
+        if let Self::Object(_) = self {
             Some(JsonMap::new(self))
         } else {
             None
@@ -112,7 +113,7 @@ impl JsonType<RustType> for RustType {
     }
 
     fn as_string(&self) -> Option<&str> {
-        if let RustType::String(s) = self {
+        if let Self::String(s) = self {
             Some(s)
         } else {
             None
@@ -120,7 +121,7 @@ impl JsonType<RustType> for RustType {
     }
 
     fn get_attribute(&self, attribute_name: &str) -> Option<&Self> {
-        if let RustType::Object(object) = self {
+        if let Self::Object(object) = self {
             object.get(attribute_name)
         } else {
             None
@@ -128,7 +129,7 @@ impl JsonType<RustType> for RustType {
     }
 
     fn get_index(&self, index: usize) -> Option<&Self> {
-        if let RustType::List(array) = self {
+        if let Self::List(array) = self {
             array.get(index)
         } else {
             None
@@ -192,10 +193,7 @@ mod smoke_test {
     fn test_testing_type_instance_list() {
         let array = vec![RustType::from(1), RustType::from(2)];
         let testing_type_instance = RustType::from(array.clone());
-        assert_eq!(
-            testing_type_instance.as_array().and_then(|iterator| Some(iterator.collect::<Vec<_>>())),
-            Some(array.iter().collect())
-        );
+        assert_eq!(testing_type_instance.as_array().map(Iterator::collect::<Vec<_>>), Some(array.iter().collect()));
         assert_eq!(testing_type_instance.has_attribute("attribute"), false);
         assert_eq!(testing_type_instance.is_array(), true);
         assert_eq!(testing_type_instance.is_boolean(), false);
@@ -250,7 +248,7 @@ mod json_map_tests {
     fn test_values() {
         let key1 = TESTING_MAP.get_attribute("key1").unwrap();
         assert_eq!(
-            JsonType::as_object(key1).unwrap().values().map(|v| { format!("{:?}", v) }).collect::<Vec<_>>(),
+            JsonType::as_object(key1).unwrap().values().map(|v| format!("{:?}", v)).collect::<Vec<_>>(),
             vec![format!("{:?}", RustType::from(1))],
         );
     }
@@ -259,7 +257,7 @@ mod json_map_tests {
     fn test_items() {
         let key1 = TESTING_MAP.get_attribute("key1").unwrap();
         assert_eq!(
-            JsonType::as_object(key1).unwrap().items().map(|(k, v)| { format!("{} -> {:?}", k, v) }).collect::<Vec<_>>(),
+            JsonType::as_object(key1).unwrap().items().map(|(k, v)| format!("{} -> {:?}", k, v)).collect::<Vec<_>>(),
             vec![format!("key2 -> {:?}", RustType::from(1))],
         );
     }
