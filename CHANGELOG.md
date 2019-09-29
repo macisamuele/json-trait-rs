@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.5.0 (2019-09-29)
+------------------
+- Replace [`test-crate-derive`](https://github.com/synek317/test-case-derive/) with [`test-crate`](https://github.com/frondeus/test-case) - [PR #14](https://github.com/macisamuele/json-trait-rs/pull/14)<br/>
+  There are no API and/or feature changes respect previous changes, but as non-test code was modified I've releaesed a new version ;)
+
 0.4.0 (2019-07-28)
 ------------------
 - Ensure that `json_trait_rs::JsonType` traits can be made into object (ie. `Box<dyn JsonType<_>>`) - [PR #6](https://github.com/macisamuele/json-trait-rs/pull/6)<br/>
