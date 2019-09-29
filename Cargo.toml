@@ -30,7 +30,7 @@ trait_pyo3 = ["pyo3"]
 [dev-dependencies]
 lazy_static = "1"
 serde_json = "1"
-test-case-derive = "0"
+test-case = "0"
 
 [dependencies]
 json = { version = "0", optional = true }
@@ -40,7 +40,3 @@ serde_yaml = { version = "0", optional = true }
 strum = "0"
 strum_macros = "0"
 unreachable = "1"
-
-[patch.crates-io]
-# TODO: Remove patch once https://github.com/synek317/test-case-derive/pull/5 is merged
-test-case-derive = { git = "https://github.com/macisamuele/test-case-derive", branch = "maci-allow-build-on-stable" }

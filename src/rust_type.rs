@@ -243,7 +243,7 @@ mod json_map_tests {
     #[test]
     fn test_keys() {
         let key1 = TESTING_MAP.get_attribute("key1").unwrap();
-        assert_eq!(JsonType::as_object(key1).unwrap().keys().map(|k| { k }).collect::<Vec<_>>(), vec![String::from("key2")],);
+        assert_eq!(JsonType::as_object(key1).unwrap().keys().collect::<Vec<_>>(), vec![String::from("key2")]);
     }
 
     #[test]

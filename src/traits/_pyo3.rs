@@ -166,7 +166,7 @@ mod tests_primitive_type_trait {
         json_type::{EnumJsonType, JsonType},
         traits::_pyo3::perform_python_check,
     };
-    use test_case_derive::test_case;
+    use test_case::test_case;
 
     #[test_case("[]", EnumJsonType::Array)]
     #[test_case("True", EnumJsonType::Boolean)]
@@ -375,7 +375,7 @@ mod json_map_tests {
     fn test_keys() {
         perform_python_check(&PYTHON_TESTING_MAP_STR, |python_object_ref| {
             let key1 = python_object_ref.get_attribute("key1").unwrap();
-            assert_eq!(JsonType::as_object(key1).unwrap().keys().map(|k| { k }).collect::<Vec<_>>(), vec![String::from("key2")],);
+            assert_eq!(JsonType::as_object(key1).unwrap().keys().collect::<Vec<_>>(), vec![String::from("key2")]);
         });
     }
 
