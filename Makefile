@@ -104,7 +104,7 @@ coverage: clean-coverage ${CODECOV_DIR}/codecov.bash
 		--source-dir ${CURDIR} \
 		--output-type lcov \
 		--llvm \
-		--ignore-dir "/*" \
+		--ignore "/*" \
 		--ignore-not-existing \
 		--output-file ${CURDIR}/.coverage/lcov.info
 	@[ "${TRAVIS}" = "true" ] && \

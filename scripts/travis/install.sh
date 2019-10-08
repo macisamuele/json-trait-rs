@@ -17,18 +17,11 @@ install_python() {
   fi
 }
 
-install_kcov() {
+install_grcov() {
   if [[ ${MAKE_TARGET} == "coverage" ]]; then
-    GITHUB_GRCOV="https://api.github.com/repos/mozilla/grcov/releases/latest"
-    GRCOV_DEFAULT_VERSION="v0.5.1"
-    if [[ ${TRAVIS_OS_NAME} == "windows" ]]; then OS_NAME="win"; else OS_NAME=${TRAVIS_OS_NAME}; fi
-
-    # Usage: download and install the latest kcov version by default.
-    # Fall back to ${KCOV_DEFAULT_VERSION} from the kcov archive if the latest is unavailable.
-    GRCOV_VERSION=$(curl --silent --show-error --fail ${GITHUB_GRCOV} | jq -Mr .tag_name || echo)
-    GRCOV_VERSION=${GRCOV_VERSION:-${GRCOV_DEFAULT_VERSION}}
-    GRCOV_TAR_BZ2="https://github.com/mozilla/grcov/releases/download/${GRCOV_VERSION}/grcov-${OS_NAME}-x86_64.tar.bz2"
-    curl -L --retry 3 "${GRCOV_TAR_BZ2}" | tar xjf - -C "${CARGO_HOME:-${HOME}/.cargo/bin}"
+    if ! command -v grcov @> /dev/null; then
+      cargo install grcov
+    fi
   fi
 }
 
@@ -54,5 +47,5 @@ install_lint_tools() {
 
 install_make
 install_python
-install_kcov
+install_grcov
 install_lint_tools
