@@ -3,23 +3,24 @@ use json;
 use std::ops::Index;
 
 impl<'json> JsonMapTrait<'json, json::JsonValue> for JsonMap<'json, json::JsonValue> {
-    #[inline]
+    #[must_use]
     fn keys(&'json self) -> Box<dyn Iterator<Item = &str> + 'json> {
         Box::new(self.entries().map(|(key, _)| key))
     }
 
-    #[inline]
+    #[must_use]
     fn values(&'json self) -> Box<dyn Iterator<Item = &json::JsonValue> + 'json> {
         Box::new(self.entries().map(|(_, value)| value))
     }
 
-    #[inline]
+    #[must_use]
     fn items(&'json self) -> Box<dyn Iterator<Item = (&str, &json::JsonValue)> + 'json> {
         Box::new(self.entries())
     }
 }
 
 impl JsonType<json::JsonValue> for json::JsonValue {
+    #[must_use]
     fn as_array<'json>(&'json self) -> Option<Box<dyn Iterator<Item = &Self> + 'json>> {
         if self.is_array() {
             Some(Box::new(self.members()))
@@ -28,10 +29,12 @@ impl JsonType<json::JsonValue> for json::JsonValue {
         }
     }
 
+    #[must_use]
     fn as_boolean(&self) -> Option<bool> {
         self.as_bool()
     }
 
+    #[must_use]
     fn as_integer(&self) -> Option<i128> {
         self.as_f64().and_then(
             // The ugly conversion here is needed because rust-json internally does not
@@ -47,6 +50,7 @@ impl JsonType<json::JsonValue> for json::JsonValue {
         )
     }
 
+    #[must_use]
     fn as_null(&self) -> Option<()> {
         if self.is_null() {
             Some(())
@@ -55,10 +59,12 @@ impl JsonType<json::JsonValue> for json::JsonValue {
         }
     }
 
+    #[must_use]
     fn as_number(&self) -> Option<f64> {
         self.as_f64()
     }
 
+    #[must_use]
     fn as_object(&self) -> Option<JsonMap<Self>>
     where
         for<'json> JsonMap<'json, Self>: JsonMapTrait<'json, Self>,
@@ -70,10 +76,12 @@ impl JsonType<json::JsonValue> for json::JsonValue {
         }
     }
 
+    #[must_use]
     fn as_string(&self) -> Option<&str> {
         self.as_str()
     }
 
+    #[must_use]
     fn get_attribute(&self, attribute_name: &str) -> Option<&Self> {
         let extracted_value = self.index(attribute_name);
         if let Self::Null = extracted_value {
@@ -83,6 +91,7 @@ impl JsonType<json::JsonValue> for json::JsonValue {
         }
     }
 
+    #[must_use]
     fn get_index(&self, index: usize) -> Option<&Self> {
         let extracted_value = self.index(index);
         if let Self::Null = extracted_value {

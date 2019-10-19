@@ -13,54 +13,63 @@ pub enum RustType {
 }
 
 impl Default for RustType {
+    #[must_use]
     fn default() -> Self {
         Self::Null
     }
 }
 
 impl From<()> for RustType {
+    #[must_use]
     fn from(_: ()) -> Self {
         Self::Null
     }
 }
 
 impl From<bool> for RustType {
+    #[must_use]
     fn from(value: bool) -> Self {
         Self::Boolean(value)
     }
 }
 
 impl From<&str> for RustType {
+    #[must_use]
     fn from(value: &str) -> Self {
         Self::String(String::from(value))
     }
 }
 
 impl From<String> for RustType {
+    #[must_use]
     fn from(value: String) -> Self {
         Self::String(value)
     }
 }
 
 impl From<i32> for RustType {
+    #[must_use]
     fn from(value: i32) -> Self {
         Self::Integer(value)
     }
 }
 
 impl From<HashMap<String, RustType>> for RustType {
+    #[must_use]
     fn from(value: HashMap<String, Self>) -> Self {
         Self::Object(value)
     }
 }
 
 impl From<Vec<RustType>> for RustType {
+    #[must_use]
     fn from(value: Vec<Self>) -> Self {
         Self::List(value)
     }
 }
 
 impl JsonType<RustType> for RustType {
+    #[must_use]
     fn as_array<'json>(&'json self) -> Option<Box<dyn Iterator<Item = &Self> + 'json>> {
         if let Self::List(v) = self {
             Some(Box::new(v.iter()))
@@ -69,6 +78,7 @@ impl JsonType<RustType> for RustType {
         }
     }
 
+    #[must_use]
     fn as_boolean(&self) -> Option<bool> {
         if let Self::Boolean(v) = self {
             Some(*v)
@@ -77,6 +87,7 @@ impl JsonType<RustType> for RustType {
         }
     }
 
+    #[must_use]
     fn as_integer(&self) -> Option<i128> {
         if let Self::Integer(v) = self {
             Some(i128::from(*v))
@@ -85,6 +96,7 @@ impl JsonType<RustType> for RustType {
         }
     }
 
+    #[must_use]
     fn as_null(&self) -> Option<()> {
         if let Self::Null = self {
             Some(())
@@ -93,6 +105,7 @@ impl JsonType<RustType> for RustType {
         }
     }
 
+    #[must_use]
     fn as_number(&self) -> Option<f64> {
         if let Self::Integer(v) = self {
             Some(f64::from(*v))
@@ -101,6 +114,7 @@ impl JsonType<RustType> for RustType {
         }
     }
 
+    #[must_use]
     fn as_object(&self) -> Option<JsonMap<Self>>
     where
         for<'json> JsonMap<'json, Self>: JsonMapTrait<'json, Self>,
@@ -112,6 +126,7 @@ impl JsonType<RustType> for RustType {
         }
     }
 
+    #[must_use]
     fn as_string(&self) -> Option<&str> {
         if let Self::String(s) = self {
             Some(s)
@@ -120,6 +135,7 @@ impl JsonType<RustType> for RustType {
         }
     }
 
+    #[must_use]
     fn get_attribute(&self, attribute_name: &str) -> Option<&Self> {
         if let Self::Object(object) = self {
             object.get(attribute_name)
@@ -128,6 +144,7 @@ impl JsonType<RustType> for RustType {
         }
     }
 
+    #[must_use]
     fn get_index(&self, index: usize) -> Option<&Self> {
         if let Self::List(array) = self {
             array.get(index)
@@ -138,7 +155,7 @@ impl JsonType<RustType> for RustType {
 }
 
 impl<'json> JsonMapTrait<'json, RustType> for JsonMap<'json, RustType> {
-    #[inline]
+    #[must_use]
     fn items(&'json self) -> Box<dyn Iterator<Item = (&str, &RustType)> + 'json> {
         if let RustType::Object(hash_map) = self.deref() {
             Box::new(hash_map.iter().map(|(k, v)| (k.as_str(), v)))

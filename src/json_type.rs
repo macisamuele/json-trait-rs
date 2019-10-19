@@ -15,6 +15,7 @@ pub enum EnumJsonType {
 }
 
 impl EnumJsonType {
+    #[must_use]
     pub fn from_type(type_string: &str) -> Option<Self>
     where
         Self: Sized,
@@ -31,6 +32,7 @@ impl EnumJsonType {
         }
     }
 
+    #[must_use]
     pub fn to_type(&self) -> &str {
         match self {
             Self::Array => "array",
@@ -48,16 +50,17 @@ pub trait JsonMapTrait<'json, T>
 where
     T: 'json + JsonType<T>,
 {
-    #[inline]
+    #[must_use]
     fn keys(&'json self) -> Box<dyn Iterator<Item = &str> + 'json> {
         Box::new(self.items().map(|(key, _)| key))
     }
 
-    #[inline]
+    #[must_use]
     fn values(&'json self) -> Box<dyn Iterator<Item = &T> + 'json> {
         Box::new(self.items().map(|(_, value)| value))
     }
 
+    #[must_use]
     fn items(&'json self) -> Box<dyn Iterator<Item = (&str, &T)> + 'json>;
 }
 
@@ -81,32 +84,26 @@ where
     fn get_attribute(&self, attribute_name: &str) -> Option<&T>;
     fn get_index(&self, index: usize) -> Option<&T>;
 
-    #[inline]
     fn is_array(&self) -> bool {
         self.as_array().is_some()
     }
 
-    #[inline]
     fn is_boolean(&self) -> bool {
         self.as_boolean().is_some()
     }
 
-    #[inline]
     fn is_integer(&self) -> bool {
         self.as_integer().is_some()
     }
 
-    #[inline]
     fn is_null(&self) -> bool {
         self.as_null().is_some()
     }
 
-    #[inline]
     fn is_number(&self) -> bool {
         self.as_number().is_some()
     }
 
-    #[inline]
     fn is_object(&self) -> bool
     where
         for<'json> JsonMap<'json, T>: JsonMapTrait<'json, T>,
@@ -114,17 +111,14 @@ where
         self.as_object().is_some()
     }
 
-    #[inline]
     fn is_string(&self) -> bool {
         self.as_string().is_some()
     }
 
-    #[inline]
     fn has_attribute(&self, attribute_name: &str) -> bool {
         self.get_attribute(attribute_name).is_some()
     }
 
-    #[inline]
     fn primitive_type(&self) -> EnumJsonType
     where
         for<'json> JsonMap<'json, T>: JsonMapTrait<'json, T>,
@@ -162,7 +156,6 @@ impl<'json, T> JsonMap<'json, T>
 where
     T: JsonType<T>,
 {
-    #[inline]
     pub fn new(object: &'json T) -> Self {
         Self(object)
     }
@@ -174,6 +167,7 @@ where
 {
     type Target = T;
 
+    #[must_use]
     fn deref(&self) -> &Self::Target {
         self.0
     }

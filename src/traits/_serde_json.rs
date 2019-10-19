@@ -2,7 +2,7 @@ use crate::json_type::{JsonMap, JsonMapTrait, JsonType};
 use serde_json;
 
 impl<'json> JsonMapTrait<'json, serde_json::Value> for JsonMap<'json, serde_json::Value> {
-    #[inline]
+    #[must_use]
     fn keys(&'json self) -> Box<dyn Iterator<Item = &str> + 'json> {
         if let Some(obj) = self.as_object() {
             Box::new(obj.keys().map(AsRef::as_ref))
@@ -14,7 +14,7 @@ impl<'json> JsonMapTrait<'json, serde_json::Value> for JsonMap<'json, serde_json
         }
     }
 
-    #[inline]
+    #[must_use]
     fn values(&'json self) -> Box<dyn Iterator<Item = &serde_json::Value> + 'json> {
         if let Some(obj) = self.as_object() {
             Box::new(obj.values())
@@ -26,7 +26,7 @@ impl<'json> JsonMapTrait<'json, serde_json::Value> for JsonMap<'json, serde_json
         }
     }
 
-    #[inline]
+    #[must_use]
     fn items(&'json self) -> Box<dyn Iterator<Item = (&str, &serde_json::Value)> + 'json> {
         if let Some(obj) = self.as_object() {
             Box::new(obj.iter().map(|(k, v)| (k.as_ref(), v)))
@@ -40,6 +40,7 @@ impl<'json> JsonMapTrait<'json, serde_json::Value> for JsonMap<'json, serde_json
 }
 
 impl JsonType<serde_json::Value> for serde_json::Value {
+    #[must_use]
     fn as_array<'json>(&'json self) -> Option<Box<dyn Iterator<Item = &Self> + 'json>> {
         if let Some(vec) = self.as_array() {
             Some(Box::new(vec.iter()))
@@ -48,10 +49,12 @@ impl JsonType<serde_json::Value> for serde_json::Value {
         }
     }
 
+    #[must_use]
     fn as_boolean(&self) -> Option<bool> {
         self.as_bool()
     }
 
+    #[must_use]
     fn as_integer(&self) -> Option<i128> {
         if let Some(value) = self.as_i64() {
             Some(i128::from(value))
@@ -60,14 +63,17 @@ impl JsonType<serde_json::Value> for serde_json::Value {
         }
     }
 
+    #[must_use]
     fn as_null(&self) -> Option<()> {
         self.as_null()
     }
 
+    #[must_use]
     fn as_number(&self) -> Option<f64> {
         self.as_f64()
     }
 
+    #[must_use]
     fn as_object(&self) -> Option<JsonMap<Self>>
     where
         for<'json> JsonMap<'json, Self>: JsonMapTrait<'json, Self>,
@@ -79,18 +85,22 @@ impl JsonType<serde_json::Value> for serde_json::Value {
         }
     }
 
+    #[must_use]
     fn as_string(&self) -> Option<&str> {
         self.as_str()
     }
 
+    #[must_use]
     fn get_attribute(&self, attribute_name: &str) -> Option<&Self> {
         self.get(attribute_name)
     }
 
+    #[must_use]
     fn get_index(&self, index: usize) -> Option<&Self> {
         self.get(index)
     }
 
+    #[must_use]
     fn has_attribute(&self, attribute_name: &str) -> bool {
         self.get(attribute_name).is_some()
     }
