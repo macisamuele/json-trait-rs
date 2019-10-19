@@ -230,15 +230,15 @@ mod tests {
         let _: Option<Box<dyn JsonType<RustType>>> = None;
     }
 
-    #[test_case("", Some(rust_type_map!["key" => rust_type_map!["inner_key" => rust_type_vec![1, "2"]]]))]
-    #[test_case("/key", Some(rust_type_map!["inner_key" => rust_type_vec![1, "2"]]))]
-    #[test_case("/key/inner_key", Some(rust_type_vec![1,"2"]))]
-    #[test_case("/key/inner_key/0", Some(RustType::from(1)))]
-    #[test_case("/key/inner_key/1", Some(RustType::from("2")))]
-    #[test_case("/not_present", None)]
-    #[test_case("/key/inner_key/a", None)]
-    #[test_case("/key/inner_key/2", None)]
-    fn test_get_fragment(fragment: &str, expected_value: Option<RustType>) {
+    #[test_case("", &Some(rust_type_map!["key" => rust_type_map!["inner_key" => rust_type_vec![1, "2"]]]))]
+    #[test_case("/key", &Some(rust_type_map!["inner_key" => rust_type_vec![1, "2"]]))]
+    #[test_case("/key/inner_key", &Some(rust_type_vec![1,"2"]))]
+    #[test_case("/key/inner_key/0", &Some(RustType::from(1)))]
+    #[test_case("/key/inner_key/1", &Some(RustType::from("2")))]
+    #[test_case("/not_present", &None)]
+    #[test_case("/key/inner_key/a", &None)]
+    #[test_case("/key/inner_key/2", &None)]
+    fn test_get_fragment(fragment: &str, expected_value: &Option<RustType>) {
         let external_map = rust_type_map![
             "key" => rust_type_map![
                 "inner_key" => rust_type_vec![
