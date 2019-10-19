@@ -55,14 +55,14 @@ before_script:
 script:
 - make "${MAKE_TARGET}"
 
-cache:
-  timeout: 3600
-  directories:
-  - ${HOME}/.cache/pre-commit
-  - ${CODECOV_DIR}
-  - ${HOME}/.cargo/
-  - ${TRAVIS_BUILD_DIR}/target
-  - /C/ProgramData/chocolatey
+# cache:
+#   timeout: 3600
+#   directories:
+#   - ${HOME}/.cache/pre-commit
+#   - ${CODECOV_DIR}
+#   - ${HOME}/.cargo/
+#   - ${TRAVIS_BUILD_DIR}/target
+#   - /C/ProgramData/chocolatey
 
 # notifications:
 #   email: false
