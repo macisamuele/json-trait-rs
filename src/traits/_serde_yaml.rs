@@ -129,155 +129,155 @@ mod tests_primitive_type_trait {
     use crate::json_type::{EnumJsonType, JsonType};
     use test_case::test_case;
 
-    #[test_case(yaml![[]], EnumJsonType::Array)]
-    #[test_case(yaml![true], EnumJsonType::Boolean)]
-    #[test_case(yaml![1], EnumJsonType::Integer)]
-    #[test_case(yaml![null], EnumJsonType::Null)]
-    #[test_case(yaml![1.2], EnumJsonType::Number)]
-    #[test_case(yaml![{"prop": "value"}], EnumJsonType::Object)]
-    #[test_case(yaml!["string"], EnumJsonType::String)]
-    fn test_primitive_type(value: serde_yaml::Value, expected_value: EnumJsonType) {
-        assert_eq!(JsonType::primitive_type(&value), expected_value);
+    #[test_case(&yaml![[]], EnumJsonType::Array)]
+    #[test_case(&yaml![true], EnumJsonType::Boolean)]
+    #[test_case(&yaml![1], EnumJsonType::Integer)]
+    #[test_case(&yaml![null], EnumJsonType::Null)]
+    #[test_case(&yaml![1.2], EnumJsonType::Number)]
+    #[test_case(&yaml![{"prop": "value"}], EnumJsonType::Object)]
+    #[test_case(&yaml!["string"], EnumJsonType::String)]
+    fn test_primitive_type(value: &serde_yaml::Value, expected_value: EnumJsonType) {
+        assert_eq!(JsonType::primitive_type(value), expected_value);
     }
 
-    #[test_case(yaml![{"present": 1}], "present", Some(yaml![1]))]
-    #[test_case(yaml![{"present": 1}], "not-present", None)]
-    fn test_get_attribute(value: serde_yaml::Value, attribute_name: &str, expected_value: Option<serde_yaml::Value>) {
-        assert_eq!(JsonType::get_attribute(&value, attribute_name), expected_value.as_ref());
+    #[test_case(&yaml![{"present": 1}], "present", Some(&yaml![1]))]
+    #[test_case(&yaml![{"present": 1}], "not-present", None)]
+    fn test_get_attribute(value: &serde_yaml::Value, attribute_name: &str, expected_value: Option<&serde_yaml::Value>) {
+        assert_eq!(JsonType::get_attribute(value, attribute_name), expected_value);
     }
 
-    #[test_case(yaml![[0, 1, 2]], 1, Some(yaml![1]))]
-    #[test_case(yaml![[0, 1, 2]], 4, None)]
-    fn test_get_index(value: serde_yaml::Value, index: usize, expected_value: Option<serde_yaml::Value>) {
-        assert_eq!(JsonType::get_index(&value, index), expected_value.as_ref());
+    #[test_case(&yaml![[0, 1, 2]], 1, &Some(yaml![1]))]
+    #[test_case(&yaml![[0, 1, 2]], 4, &None)]
+    fn test_get_index(value: &serde_yaml::Value, index: usize, expected_value: &Option<serde_yaml::Value>) {
+        assert_eq!(JsonType::get_index(value, index), expected_value.as_ref());
     }
 
-    #[test_case(yaml![{"present": 1}], "present", true)]
-    #[test_case(yaml![{"present": 1}], "not-present", false)]
-    #[test_case(yaml![[1, 2, 3]], "not-present", false)]
-    fn test_has_attribute(value: serde_yaml::Value, attr_name: &str, expected_value: bool) {
-        assert_eq!(JsonType::has_attribute(&value, attr_name), expected_value);
+    #[test_case(&yaml![{"present": 1}], "present", true)]
+    #[test_case(&yaml![{"present": 1}], "not-present", false)]
+    #[test_case(&yaml![[1, 2, 3]], "not-present", false)]
+    fn test_has_attribute(value: &serde_yaml::Value, attr_name: &str, expected_value: bool) {
+        assert_eq!(JsonType::has_attribute(value, attr_name), expected_value);
     }
 
-    #[test_case(yaml![[0, 1, 2]], true)]
-    #[test_case(yaml![true], false)]
-    #[test_case(yaml![1_u32], false)]
-    #[test_case(yaml![null], false)]
-    #[test_case(yaml![1.2_f32], false)]
-    #[test_case(yaml![{"key": "value"}], false)]
-    #[test_case(yaml!["string"], false)]
-    fn test_is_array(value: serde_yaml::Value, expected_value: bool) {
-        assert_eq!(JsonType::is_array(&value), expected_value);
+    #[test_case(&yaml![[0, 1, 2]], true)]
+    #[test_case(&yaml![true], false)]
+    #[test_case(&yaml![1_u32], false)]
+    #[test_case(&yaml![null], false)]
+    #[test_case(&yaml![1.2_f32], false)]
+    #[test_case(&yaml![{"key": "value"}], false)]
+    #[test_case(&yaml!["string"], false)]
+    fn test_is_array(value: &serde_yaml::Value, expected_value: bool) {
+        assert_eq!(JsonType::is_array(value), expected_value);
     }
 
-    #[test_case(yaml![[0, 1, 2]], false)]
-    #[test_case(yaml![true], true)]
-    #[test_case(yaml![1_u32], false)]
-    #[test_case(yaml![null], false)]
-    #[test_case(yaml![1.2_f32], false)]
-    #[test_case(yaml![{"key": "value"}], false)]
-    #[test_case(yaml!["string"], false)]
-    fn test_is_boolean(value: serde_yaml::Value, expected_value: bool) {
-        assert_eq!(JsonType::is_boolean(&value), expected_value);
+    #[test_case(&yaml![[0, 1, 2]], false)]
+    #[test_case(&yaml![true], true)]
+    #[test_case(&yaml![1_u32], false)]
+    #[test_case(&yaml![null], false)]
+    #[test_case(&yaml![1.2_f32], false)]
+    #[test_case(&yaml![{"key": "value"}], false)]
+    #[test_case(&yaml!["string"], false)]
+    fn test_is_boolean(value: &serde_yaml::Value, expected_value: bool) {
+        assert_eq!(JsonType::is_boolean(value), expected_value);
     }
 
-    #[test_case(yaml![[0, 1, 2]], false)]
-    #[test_case(yaml![true], false)]
-    #[test_case(yaml![1_u32], true)]
-    #[test_case(yaml![null], false)]
-    #[test_case(yaml![1.2_f32], false)]
-    #[test_case(yaml![{"key": "value"}], false)]
-    #[test_case(yaml!["string"], false)]
-    fn test_is_integer(value: serde_yaml::Value, expected_value: bool) {
-        assert_eq!(JsonType::is_integer(&value), expected_value);
+    #[test_case(&yaml![[0, 1, 2]], false)]
+    #[test_case(&yaml![true], false)]
+    #[test_case(&yaml![1_u32], true)]
+    #[test_case(&yaml![null], false)]
+    #[test_case(&yaml![1.2_f32], false)]
+    #[test_case(&yaml![{"key": "value"}], false)]
+    #[test_case(&yaml!["string"], false)]
+    fn test_is_integer(value: &serde_yaml::Value, expected_value: bool) {
+        assert_eq!(JsonType::is_integer(value), expected_value);
     }
 
-    #[test_case(yaml![[0, 1, 2]], false)]
-    #[test_case(yaml![true], false)]
-    #[test_case(yaml![1_u32], false)]
-    #[test_case(yaml![null], true)]
-    #[test_case(yaml![1.2_f32], false)]
-    #[test_case(yaml![{"key": "value"}], false)]
-    #[test_case(yaml!["string"], false)]
-    fn test_is_null(value: serde_yaml::Value, expected_value: bool) {
-        assert_eq!(JsonType::is_null(&value), expected_value);
+    #[test_case(&yaml![[0, 1, 2]], false)]
+    #[test_case(&yaml![true], false)]
+    #[test_case(&yaml![1_u32], false)]
+    #[test_case(&yaml![null], true)]
+    #[test_case(&yaml![1.2_f32], false)]
+    #[test_case(&yaml![{"key": "value"}], false)]
+    #[test_case(&yaml!["string"], false)]
+    fn test_is_null(value: &serde_yaml::Value, expected_value: bool) {
+        assert_eq!(JsonType::is_null(value), expected_value);
     }
 
-    #[test_case(yaml![[0, 1, 2]], false)]
-    #[test_case(yaml![true], false)]
-    #[test_case(yaml![1_u32], true)]
-    #[test_case(yaml![null], false)]
-    #[test_case(yaml![1.2_f32], true)]
-    #[test_case(yaml![{"key": "value"}], false)]
-    #[test_case(yaml!["string"], false)]
-    fn test_is_number(value: serde_yaml::Value, expected_value: bool) {
-        assert_eq!(JsonType::is_number(&value), expected_value);
+    #[test_case(&yaml![[0, 1, 2]], false)]
+    #[test_case(&yaml![true], false)]
+    #[test_case(&yaml![1_u32], true)]
+    #[test_case(&yaml![null], false)]
+    #[test_case(&yaml![1.2_f32], true)]
+    #[test_case(&yaml![{"key": "value"}], false)]
+    #[test_case(&yaml!["string"], false)]
+    fn test_is_number(value: &serde_yaml::Value, expected_value: bool) {
+        assert_eq!(JsonType::is_number(value), expected_value);
     }
 
-    #[test_case(yaml![[0, 1, 2]], false)]
-    #[test_case(yaml![true], false)]
-    #[test_case(yaml![1_u32], false)]
-    #[test_case(yaml![null], false)]
-    #[test_case(yaml![1.2_f32], false)]
-    #[test_case(yaml![{"key": "value"}], true)]
-    #[test_case(yaml!["string"], false)]
-    fn test_is_object(value: serde_yaml::Value, expected_value: bool) {
-        assert_eq!(JsonType::is_object(&value), expected_value);
+    #[test_case(&yaml![[0, 1, 2]], false)]
+    #[test_case(&yaml![true], false)]
+    #[test_case(&yaml![1_u32], false)]
+    #[test_case(&yaml![null], false)]
+    #[test_case(&yaml![1.2_f32], false)]
+    #[test_case(&yaml![{"key": "value"}], true)]
+    #[test_case(&yaml!["string"], false)]
+    fn test_is_object(value: &serde_yaml::Value, expected_value: bool) {
+        assert_eq!(JsonType::is_object(value), expected_value);
     }
 
-    #[test_case(yaml![[0, 1, 2]], false)]
-    #[test_case(yaml![true], false)]
-    #[test_case(yaml![1_u32], false)]
-    #[test_case(yaml![null], false)]
-    #[test_case(yaml![1.2_f32], false)]
-    #[test_case(yaml![{"key": "value"}], false)]
-    #[test_case(yaml!["string"], true)]
-    fn test_is_string(value: serde_yaml::Value, expected_value: bool) {
-        assert_eq!(JsonType::is_string(&value), expected_value);
+    #[test_case(&yaml![[0, 1, 2]], false)]
+    #[test_case(&yaml![true], false)]
+    #[test_case(&yaml![1_u32], false)]
+    #[test_case(&yaml![null], false)]
+    #[test_case(&yaml![1.2_f32], false)]
+    #[test_case(&yaml![{"key": "value"}], false)]
+    #[test_case(&yaml!["string"], true)]
+    fn test_is_string(value: &serde_yaml::Value, expected_value: bool) {
+        assert_eq!(JsonType::is_string(value), expected_value);
     }
 
-    #[test_case(yaml![[1]], Some(vec![yaml![1]]))]
-    #[test_case(yaml![[1, "a"]], Some(vec![yaml![1], yaml!["a"]]))]
-    #[test_case(yaml![null], None)]
-    fn test_as_array(value: serde_yaml::Value, expected_value: Option<Vec<serde_yaml::Value>>) {
-        assert_eq!(JsonType::as_array(&value).map(|iterator| iterator.cloned().collect()), expected_value);
+    #[test_case(&yaml![[1]], &Some(vec![yaml![1]]))]
+    #[test_case(&yaml![[1, "a"]], &Some(vec![yaml![1], yaml!["a"]]))]
+    #[test_case(&yaml![null], &None)]
+    fn test_as_array(value: &serde_yaml::Value, expected_value: &Option<Vec<serde_yaml::Value>>) {
+        assert_eq!(&JsonType::as_array(value).map(|iterator| iterator.cloned().collect()), expected_value);
     }
 
-    #[test_case(yaml![true], Some(true))]
-    #[test_case(yaml![false], Some(false))]
-    #[test_case(yaml![1], None)]
-    fn test_as_boolean(value: serde_yaml::Value, expected_value: Option<bool>) {
-        assert_eq!(JsonType::as_boolean(&value), expected_value);
+    #[test_case(&yaml![true], Some(true))]
+    #[test_case(&yaml![false], Some(false))]
+    #[test_case(&yaml![1], None)]
+    fn test_as_boolean(value: &serde_yaml::Value, expected_value: Option<bool>) {
+        assert_eq!(JsonType::as_boolean(value), expected_value);
     }
 
-    #[test_case(yaml![1], Some(1))]
-    #[test_case(yaml![1.2], None)]
-    #[test_case(yaml!["1"], None)]
-    fn test_as_integer(value: serde_yaml::Value, expected_value: Option<i128>) {
-        assert_eq!(JsonType::as_integer(&value), expected_value);
+    #[test_case(&yaml![1], Some(1))]
+    #[test_case(&yaml![1.2], None)]
+    #[test_case(&yaml!["1"], None)]
+    fn test_as_integer(value: &serde_yaml::Value, expected_value: Option<i128>) {
+        assert_eq!(JsonType::as_integer(value), expected_value);
     }
 
-    #[test_case(yaml![null], Some(()))]
-    #[test_case(yaml!["1"], None)]
-    fn test_as_null(value: serde_yaml::Value, expected_value: Option<()>) {
-        assert_eq!(JsonType::as_null(&value), expected_value);
+    #[test_case(&yaml![null], Some(()))]
+    #[test_case(&yaml!["1"], None)]
+    fn test_as_null(value: &serde_yaml::Value, expected_value: Option<()>) {
+        assert_eq!(JsonType::as_null(value), expected_value);
     }
 
-    #[test_case(yaml![1], Some(1_f64))]
-    #[test_case(yaml![1.2], Some(1.2))]
-    #[test_case(yaml!["1"], None)]
-    fn test_as_number(value: serde_yaml::Value, expected_value: Option<f64>) {
-        assert_eq!(JsonType::as_number(&value), expected_value);
+    #[test_case(&yaml![1], Some(1_f64))]
+    #[test_case(&yaml![1.2], Some(1.2))]
+    #[test_case(&yaml!["1"], None)]
+    fn test_as_number(value: &serde_yaml::Value, expected_value: Option<f64>) {
+        assert_eq!(JsonType::as_number(value), expected_value);
     }
 
-    #[test_case(yaml![1], None)]
-    #[test_case(yaml![1.2], None)]
-    #[test_case(yaml![{"1": 1}], Some(yaml![{"1": 1}]))]
-    fn test_as_object(value: serde_yaml::Value, expected_value: Option<serde_yaml::Value>) {
+    #[test_case(&yaml![1], &None)]
+    #[test_case(&yaml![1.2], &None)]
+    #[test_case(&yaml![{"1": 1}], &Some(yaml![{"1": 1}]))]
+    fn test_as_object(value: &serde_yaml::Value, expected_value: &Option<serde_yaml::Value>) {
         use std::ops::Deref;
 
         assert_eq!(
-            match JsonType::as_object(&value) {
+            match JsonType::as_object(value) {
                 Some(ref v) => Some(v.deref()),
                 None => None,
             },
@@ -285,11 +285,11 @@ mod tests_primitive_type_trait {
         );
     }
 
-    #[test_case(yaml![1], None)]
-    #[test_case(yaml![1.2], None)]
-    #[test_case(yaml!["1"], Some("1"))]
-    fn test_as_string(value: serde_yaml::Value, expected_value: Option<&str>) {
-        assert_eq!(JsonType::as_string(&value), expected_value);
+    #[test_case(&yaml![1], None)]
+    #[test_case(&yaml![1.2], None)]
+    #[test_case(&yaml!["1"], Some("1"))]
+    fn test_as_string(value: &serde_yaml::Value, expected_value: Option<&str>) {
+        assert_eq!(JsonType::as_string(value), expected_value);
     }
 }
 
