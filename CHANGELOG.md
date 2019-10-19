@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.5.1 (2019-10-19)
+------------------
+- Reduce usage of ``#[inline]`` and ensure that method results are used via ``#[must_use]`` - [PR #17](https://github.com/macisamuele/json-trait-rs/pull/17)
+
 0.5.0 (2019-09-29)
 ------------------
 - Replace [`test-crate-derive`](https://github.com/synek317/test-case-derive/) with [`test-crate`](https://github.com/frondeus/test-case) - [PR #14](https://github.com/macisamuele/json-trait-rs/pull/14)<br/>
