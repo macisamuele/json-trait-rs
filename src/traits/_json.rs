@@ -3,19 +3,16 @@ use json;
 use std::ops::Index;
 
 impl<'json> JsonMapTrait<'json, json::JsonValue> for JsonMap<'json, json::JsonValue> {
-    #[inline]
     #[must_use]
     fn keys(&'json self) -> Box<dyn Iterator<Item = &str> + 'json> {
         Box::new(self.entries().map(|(key, _)| key))
     }
 
-    #[inline]
     #[must_use]
     fn values(&'json self) -> Box<dyn Iterator<Item = &json::JsonValue> + 'json> {
         Box::new(self.entries().map(|(_, value)| value))
     }
 
-    #[inline]
     #[must_use]
     fn items(&'json self) -> Box<dyn Iterator<Item = (&str, &json::JsonValue)> + 'json> {
         Box::new(self.entries())

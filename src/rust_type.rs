@@ -155,7 +155,6 @@ impl JsonType<RustType> for RustType {
 }
 
 impl<'json> JsonMapTrait<'json, RustType> for JsonMap<'json, RustType> {
-    #[inline]
     #[must_use]
     fn items(&'json self) -> Box<dyn Iterator<Item = (&str, &RustType)> + 'json> {
         if let RustType::Object(hash_map) = self.deref() {

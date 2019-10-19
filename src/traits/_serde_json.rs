@@ -2,7 +2,6 @@ use crate::json_type::{JsonMap, JsonMapTrait, JsonType};
 use serde_json;
 
 impl<'json> JsonMapTrait<'json, serde_json::Value> for JsonMap<'json, serde_json::Value> {
-    #[inline]
     #[must_use]
     fn keys(&'json self) -> Box<dyn Iterator<Item = &str> + 'json> {
         if let Some(obj) = self.as_object() {
@@ -15,7 +14,6 @@ impl<'json> JsonMapTrait<'json, serde_json::Value> for JsonMap<'json, serde_json
         }
     }
 
-    #[inline]
     #[must_use]
     fn values(&'json self) -> Box<dyn Iterator<Item = &serde_json::Value> + 'json> {
         if let Some(obj) = self.as_object() {
@@ -28,7 +26,6 @@ impl<'json> JsonMapTrait<'json, serde_json::Value> for JsonMap<'json, serde_json
         }
     }
 
-    #[inline]
     #[must_use]
     fn items(&'json self) -> Box<dyn Iterator<Item = (&str, &serde_json::Value)> + 'json> {
         if let Some(obj) = self.as_object() {

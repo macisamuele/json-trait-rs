@@ -8,7 +8,6 @@ use pyo3::{
 use std::{convert::TryInto, ops::Deref};
 
 impl<'json> JsonMapTrait<'json, PyAny> for JsonMap<'json, PyAny> {
-    #[inline]
     #[must_use]
     fn keys(&'json self) -> Box<dyn Iterator<Item = &str> + 'json> {
         match PyTryInto::<PyDict>::try_into(self.deref()) {
@@ -17,7 +16,6 @@ impl<'json> JsonMapTrait<'json, PyAny> for JsonMap<'json, PyAny> {
         }
     }
 
-    #[inline]
     #[must_use]
     fn values(&'json self) -> Box<dyn Iterator<Item = &PyAny> + 'json> {
         match PyTryInto::<PyDict>::try_into(self.deref()) {
@@ -26,7 +24,6 @@ impl<'json> JsonMapTrait<'json, PyAny> for JsonMap<'json, PyAny> {
         }
     }
 
-    #[inline]
     #[must_use]
     fn items(&'json self) -> Box<dyn Iterator<Item = (&str, &PyAny)> + 'json> {
         match PyTryInto::<PyDict>::try_into(self.deref()) {
