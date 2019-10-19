@@ -8,6 +8,8 @@ use pyo3::{
 use std::{convert::TryInto, ops::Deref};
 
 impl<'json> JsonMapTrait<'json, PyAny> for JsonMap<'json, PyAny> {
+    #[inline]
+    #[must_use]
     fn keys(&'json self) -> Box<dyn Iterator<Item = &str> + 'json> {
         match PyTryInto::<PyDict>::try_into(self.deref()) {
             Ok(python_dict) => Box::new(python_dict.iter().filter_map(|(k, _)| k.as_string())),
@@ -15,6 +17,8 @@ impl<'json> JsonMapTrait<'json, PyAny> for JsonMap<'json, PyAny> {
         }
     }
 
+    #[inline]
+    #[must_use]
     fn values(&'json self) -> Box<dyn Iterator<Item = &PyAny> + 'json> {
         match PyTryInto::<PyDict>::try_into(self.deref()) {
             Ok(python_dict) => Box::new(python_dict.iter().map(|(_, v)| v)),
@@ -22,6 +26,8 @@ impl<'json> JsonMapTrait<'json, PyAny> for JsonMap<'json, PyAny> {
         }
     }
 
+    #[inline]
+    #[must_use]
     fn items(&'json self) -> Box<dyn Iterator<Item = (&str, &PyAny)> + 'json> {
         match PyTryInto::<PyDict>::try_into(self.deref()) {
             Ok(python_dict) => Box::new(python_dict.iter().filter_map(|(k, v)| k.as_string().map(|k_string| (k_string, v)).or(None))),
@@ -31,6 +37,7 @@ impl<'json> JsonMapTrait<'json, PyAny> for JsonMap<'json, PyAny> {
 }
 
 impl JsonType<PyAny> for PyAny {
+    #[must_use]
     fn as_array<'json>(&'json self) -> Option<Box<dyn Iterator<Item = &Self> + 'json>> {
         match PyTryInto::<PySequence>::try_into(self) {
             Err(_) => None,
@@ -47,10 +54,12 @@ impl JsonType<PyAny> for PyAny {
         }
     }
 
+    #[must_use]
     fn as_boolean(&self) -> Option<bool> {
         self.extract().ok()
     }
 
+    #[must_use]
     fn as_integer(&self) -> Option<i128> {
         self.extract().ok().and_then(|value| {
             // In python `assert isinstance(True, int) is True` is correct
@@ -64,6 +73,7 @@ impl JsonType<PyAny> for PyAny {
         })
     }
 
+    #[must_use]
     fn as_null(&self) -> Option<()> {
         if self.is_none() {
             Some(())
@@ -72,6 +82,7 @@ impl JsonType<PyAny> for PyAny {
         }
     }
 
+    #[must_use]
     fn as_number(&self) -> Option<f64> {
         self.extract().ok().and_then(|value| {
             // pyo3 is able to convert a boolean value into a f64 instance
@@ -85,6 +96,7 @@ impl JsonType<PyAny> for PyAny {
         })
     }
 
+    #[must_use]
     fn as_object(&self) -> Option<JsonMap<Self>>
     where
         for<'json> JsonMap<'json, Self>: JsonMapTrait<'json, Self>,
@@ -92,10 +104,12 @@ impl JsonType<PyAny> for PyAny {
         PyTryInto::<PyDict>::try_into(self).ok().map(|_| JsonMap::new(self))
     }
 
+    #[must_use]
     fn as_string(&self) -> Option<&str> {
         self.extract().ok()
     }
 
+    #[must_use]
     fn get_attribute(&self, attribute_name: &str) -> Option<&Self> {
         if let Ok(python_dict) = PyTryInto::<PyDict>::try_into(self) {
             return (python_dict as &PyDict).get_item(attribute_name);
@@ -103,6 +117,7 @@ impl JsonType<PyAny> for PyAny {
         None
     }
 
+    #[must_use]
     fn get_index(&self, index: usize) -> Option<&Self> {
         if let Ok(idx) = TryInto::<isize>::try_into(index) {
             if let Ok(python_sequence) = PyTryInto::<PySequence>::try_into(self) {

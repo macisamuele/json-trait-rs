@@ -15,6 +15,7 @@ pub enum EnumJsonType {
 }
 
 impl EnumJsonType {
+    #[must_use]
     pub fn from_type(type_string: &str) -> Option<Self>
     where
         Self: Sized,
@@ -31,6 +32,7 @@ impl EnumJsonType {
         }
     }
 
+    #[must_use]
     pub fn to_type(&self) -> &str {
         match self {
             Self::Array => "array",
@@ -49,15 +51,18 @@ where
     T: 'json + JsonType<T>,
 {
     #[inline]
+    #[must_use]
     fn keys(&'json self) -> Box<dyn Iterator<Item = &str> + 'json> {
         Box::new(self.items().map(|(key, _)| key))
     }
 
     #[inline]
+    #[must_use]
     fn values(&'json self) -> Box<dyn Iterator<Item = &T> + 'json> {
         Box::new(self.items().map(|(_, value)| value))
     }
 
+    #[must_use]
     fn items(&'json self) -> Box<dyn Iterator<Item = (&str, &T)> + 'json>;
 }
 
@@ -174,6 +179,7 @@ where
 {
     type Target = T;
 
+    #[must_use]
     fn deref(&self) -> &Self::Target {
         self.0
     }
