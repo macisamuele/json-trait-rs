@@ -40,8 +40,6 @@ install_lint_tools() {
       # Workaround in case clippy is not available in the current nightly release (https://github.com/rust-lang/rust-clippy#travis-ci)
       rustup component add clippy --toolchain="${TRAVIS_RUST_VERSION}" || cargo +"${TRAVIS_RUST_VERSION}" install --git https://github.com/rust-lang/rust-clippy/ --force clippy
     fi
-  else
-    echo "# Skipping lint-tools install as target is not coverage" > /dev/stderr
   fi
 }
 
