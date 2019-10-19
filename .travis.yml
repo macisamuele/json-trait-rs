@@ -43,8 +43,6 @@ matrix:
     env: MAKE_TARGET=lint
   allow_failures:
   - env: MAKE_TARGET=lint
-  - os: osx
-  - os: windows
 
 install:
 - bash scripts/travis/install.sh
