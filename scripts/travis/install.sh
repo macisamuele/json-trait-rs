@@ -20,7 +20,23 @@ install_python() {
 install_grcov() {
   if [[ ${MAKE_TARGET} == "coverage" ]]; then
     if ! command -v grcov @> /dev/null; then
-      cargo install grcov
+      CARGO_HOME=${CARGO_HOME:-${HOME}/.cargo}
+      GRCOV_DEFAULT_VERSION="v0.5.5"
+      GITHUB_GRCOV="https://api.github.com/repos/mozilla/grcov/releases/latest"
+
+      # Usage: download and install the latest kcov version by default.
+      # Fall back to ${GRCOV_DEFAULT_VERSION} from the kcov archive if the latest is unavailable.
+      GRCOV_VERSION=$(curl --silent --show-error --fail ${GITHUB_GRCOV} | jq -Mr .tag_name || echo)
+      GRCOV_VERSION=${GRCOV_VERSION:-$GRCOV_DEFAULT_VERSION}
+
+      GRCOV_TARBZ2="https://github.com/mozilla/grcov/releases/download/${GRCOV_VERSION}/grcov-linux-x86_64.tar.bz2"
+
+      if curl -L --retry 3 "${GRCOV_TARBZ2}" | tar xjvf -; then
+        mv ./grcov "${CARGO_HOME}/bin"
+      else
+        # Fallback to manually build grcov if we failed to find the pre-built release
+        cargo install grcov
+      fi
     fi
   fi
 }
