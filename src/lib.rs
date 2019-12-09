@@ -58,5 +58,5 @@ mod json_type;
 mod rust_type;
 pub mod traits;
 
-pub use json_type::{get_fragment, EnumJsonType, JsonMap, JsonMapTrait, JsonType};
+pub use json_type::{get_fragment, EnumJsonType, JsonMap, JsonMapTrait, JsonType, ThreadSafeJsonType};
 pub use rust_type::RustType;
