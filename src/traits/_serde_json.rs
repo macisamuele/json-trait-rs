@@ -1,4 +1,7 @@
-use crate::json_type::{JsonMap, JsonMapTrait, JsonType};
+use crate::{
+    json_type::{JsonMap, JsonMapTrait, JsonType},
+    ThreadSafeJsonType,
+};
 use serde_json;
 
 impl<'json> JsonMapTrait<'json, serde_json::Value> for JsonMap<'json, serde_json::Value> {
@@ -105,6 +108,8 @@ impl JsonType<serde_json::Value> for serde_json::Value {
         self.get(attribute_name).is_some()
     }
 }
+
+impl dyn ThreadSafeJsonType<serde_json::Value> {}
 
 #[cfg(test)]
 mod tests_json_map_trait {

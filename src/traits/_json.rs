@@ -1,4 +1,7 @@
-use crate::json_type::{JsonMap, JsonMapTrait, JsonType};
+use crate::{
+    json_type::{JsonMap, JsonMapTrait, JsonType},
+    ThreadSafeJsonType,
+};
 use json;
 use std::ops::Index;
 
@@ -101,6 +104,8 @@ impl JsonType<json::JsonValue> for json::JsonValue {
         }
     }
 }
+
+impl dyn ThreadSafeJsonType<json::JsonValue> {}
 
 #[cfg(test)]
 mod tests_json_map_trait {
