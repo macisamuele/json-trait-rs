@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.6.0 (2019-12-19)
+------------------
+- Relax ``JsonType`` to not be thread safe and define ``ThreadSafeJsonType`` to provide the thread safe version - [PR #22](https://github.com/macisamuele/json-trait-rs/pull/22)
+
 0.5.1 (2019-10-19)
 ------------------
 - Reduce usage of ``#[inline]`` and ensure that method results are used via ``#[must_use]`` - [PR #17](https://github.com/macisamuele/json-trait-rs/pull/17)

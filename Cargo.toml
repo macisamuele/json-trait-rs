@@ -9,7 +9,7 @@ license = "MIT"
 name = "json-trait-rs"
 readme = "README.md"
 publish = true
-version = "0.5.1"
+version = "0.6.0"
 
 [badges]
 codecov = { repository = "macisamuele/json-trait-rs", branch = "master", service = "github" }
