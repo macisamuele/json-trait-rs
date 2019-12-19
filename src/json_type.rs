@@ -71,7 +71,7 @@ pub trait JsonType<T>: Debug
 where
     T: JsonType<T>,
 {
-    fn as_array<'json>(&'json self) -> Option<Box<dyn Iterator<Item = &T> + 'json>>;
+    fn as_array<'json>(&'json self) -> Option<Box<dyn ExactSizeIterator<Item = &T> + 'json>>;
     fn as_boolean(&self) -> Option<bool>;
     fn as_integer(&self) -> Option<i128>;
     fn as_null(&self) -> Option<()>;

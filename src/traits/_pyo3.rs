@@ -35,7 +35,7 @@ impl<'json> JsonMapTrait<'json, PyAny> for JsonMap<'json, PyAny> {
 
 impl JsonType<PyAny> for PyAny {
     #[must_use]
-    fn as_array<'json>(&'json self) -> Option<Box<dyn Iterator<Item = &Self> + 'json>> {
+    fn as_array<'json>(&'json self) -> Option<Box<dyn ExactSizeIterator<Item = &Self> + 'json>> {
         match PyTryInto::<PySequence>::try_into(self) {
             Err(_) => None,
             Ok(py_sequence) => match py_sequence.iter() {
@@ -44,7 +44,7 @@ impl JsonType<PyAny> for PyAny {
                     if self.is_string() {
                         None
                     } else {
-                        Some(Box::new(iterator.filter_map(Result::ok)))
+                        Some(Box::new(iterator.filter_map(Result::ok).collect::<Vec<_>>().into_iter()))
                     }
                 }
             },

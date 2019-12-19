@@ -73,7 +73,7 @@ impl From<Vec<RustType>> for RustType {
 
 impl JsonType<RustType> for RustType {
     #[must_use]
-    fn as_array<'json>(&'json self) -> Option<Box<dyn Iterator<Item = &Self> + 'json>> {
+    fn as_array<'json>(&'json self) -> Option<Box<dyn ExactSizeIterator<Item = &Self> + 'json>> {
         if let Self::List(v) = self {
             Some(Box::new(v.iter()))
         } else {

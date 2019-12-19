@@ -24,7 +24,7 @@ impl<'json> JsonMapTrait<'json, json::JsonValue> for JsonMap<'json, json::JsonVa
 
 impl JsonType<json::JsonValue> for json::JsonValue {
     #[must_use]
-    fn as_array<'json>(&'json self) -> Option<Box<dyn Iterator<Item = &Self> + 'json>> {
+    fn as_array<'json>(&'json self) -> Option<Box<dyn ExactSizeIterator<Item = &Self> + 'json>> {
         if self.is_array() {
             Some(Box::new(self.members()))
         } else {
