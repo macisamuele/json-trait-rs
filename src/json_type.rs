@@ -147,6 +147,7 @@ where
     }
 }
 
+#[allow(clippy::module_name_repetitions)]
 pub trait ThreadSafeJsonType<T>: JsonType<T> + Sync + Send
 where
     T: JsonType<T>,

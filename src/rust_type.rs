@@ -1,4 +1,7 @@
-use crate::json_type::{JsonMap, JsonMapTrait, JsonType};
+use crate::{
+    json_type::{JsonMap, JsonMapTrait, JsonType},
+    ThreadSafeJsonType,
+};
 use std::{collections::hash_map::HashMap, ops::Deref};
 
 #[allow(clippy::module_name_repetitions)]
@@ -153,6 +156,8 @@ impl JsonType<RustType> for RustType {
         }
     }
 }
+
+impl ThreadSafeJsonType<RustType> for RustType {}
 
 impl<'json> JsonMapTrait<'json, RustType> for JsonMap<'json, RustType> {
     #[must_use]
