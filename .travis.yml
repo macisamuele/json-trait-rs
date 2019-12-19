@@ -77,5 +77,5 @@ deploy:
   token:
     secure: koNCxK/O/zVgWr6MKW7pFwkV5dhza4MySHwm+sEB5o67zcuLUfzQifpbQmHaJVskxq+KCriOImSLjxrZJDSPHAWnxktf1yWdP7/gGnQgbfI0jIYOSlCVsp8UClg+YDANrQcJjv1X34YevlU/kll0VnsQ3Ym9vuKWLQgrmoZQWx9bZs7znHS0Cd6ijTitD7E2gsPAYlRB0T8Y7pYU5MQd08wtP/1XPhIJyZ2RG6W+WPCv6js60Cqnxhx2cCBMRi8RKtS8lNEm21akVOPxmgeuQr4TY0lDNZlXFfz7ujjBSzUa2EYGQ2Ut8ds2UmeQ+M8cRRCpdgECI/PT6O/hQiez5wek61HX/Vz/qBISlzjw9Xg50Ts99Ga9PMcZLwPi8WTJFYyMSIZX00DluJ3qnQzTcCofBoFUWtwAuRukc98YNC2WBfty5F6xOg/1xhOL4i57YXR1Bz0dKFVgAJ6xrhT7t/KnSTApY47SzZhQgLGLdCk6gyOtaeeUA54z8S3jAEEstULWKOx4fHz+nU8kRtNQSin67RfHsLgxWj0cRnBiQ08fbdW/6BB6sEMvBOQ/HsEVkDpAMaZY/xBR9tF2CnAAqni7iQ6yuRO5nIPm5O3ytF/bMkDPPV5Wx+vnGSxfe74c2vA5V/HJGdvQHEiflUQ61G6mQr+0V2GrnYunHExSjiQ=
   on:
-    condition: ${TRAVIS_REPO_SLUG} = macisamuele/json-trait-rs && ${MAKE_TARGET} = test-all-flavours && ${TRAVIS_RUST_VERSION} = stable && $(bash scripts/cargo-version.sh) = ${TRAVIS_TAG}
+    condition: ${TRAVIS_OS_NAME} = "linux" && ${TRAVIS_REPO_SLUG} = macisamuele/json-trait-rs && ${MAKE_TARGET} = test-all-flavours && ${TRAVIS_RUST_VERSION} = stable && $(bash scripts/cargo-version.sh) = ${TRAVIS_TAG}
     tags: true
