@@ -9,15 +9,15 @@ env:
 matrix:
   include:
   - os: linux
-    dist: xenial
+    dist: bionic
     env: MAKE_TARGET=coverage
     rust: nightly  # Running on nightly to ensure that all the traits are actually tested
   - os: linux
-    dist: xenial
+    dist: bionic
     rust: stable
     env: MAKE_TARGET=test-all-flavours
   - os: linux
-    dist: xenial
+    dist: bionic
     rust: nightly
     env: MAKE_TARGET=test-all-flavours
   - os: osx
@@ -27,15 +27,15 @@ matrix:
     rust: nightly
     env: MAKE_TARGET=test-all-flavours PYTHON_SYS_EXECUTABLE=/C/Python37/python.exe PATH=${PATH}:/C/Python37/:/C/Python37/Scripts
   - os: linux
-    dist: xenial
+    dist: bionic
     env: MAKE_TARGET=doc
     rust: stable
   - os: linux
-    dist: xenial
+    dist: bionic
     env: MAKE_TARGET=audit
     rust: nightly
   - os: linux
-    dist: xenial
+    dist: bionic
     # Before updating this make sure that nighly-YYYY-MM-DD contains either rustfmt and clippy
     # Use
     #   * `curl -s https://rust-lang.github.io/rustup-components-history/x86_64-unknown-linux-gnu/clippy`
