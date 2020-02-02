@@ -81,6 +81,10 @@ test:
 test-all-flavours:
 	$(call call_all_features,test)
 
+.PHONY: audit
+audit:
+	cargo +${RUST_TOOLCHAIN} audit
+
 .PHONY: doc
 doc:
 	cargo +${RUST_TOOLCHAIN} doc --no-deps ${CARGO_ARGS}
