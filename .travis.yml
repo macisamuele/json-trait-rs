@@ -41,7 +41,7 @@ matrix:
     #   * `curl -s https://rust-lang.github.io/rustup-components-history/x86_64-unknown-linux-gnu/clippy`
     #   * `curl -s https://rust-lang.github.io/rustup-components-history/x86_64-unknown-linux-gnu/rustfmt`
     # to validate that both tools are available
-    rust: nightly-2019-12-19
+    rust: nightly-2020-02-01
     env: MAKE_TARGET=lint
   allow_failures:
   - env: MAKE_TARGET=lint
