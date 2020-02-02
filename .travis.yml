@@ -21,13 +21,7 @@ matrix:
     rust: nightly
     env: MAKE_TARGET=test-all-flavours
   - os: osx
-    rust: stable
-    env: MAKE_TARGET=test-all-flavours
-  - os: osx
     rust: nightly
-    env: MAKE_TARGET=test-all-flavours
-  - os: windows
-    rust: stable
     env: MAKE_TARGET=test-all-flavours
   - os: windows
     rust: nightly
