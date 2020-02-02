@@ -9,3 +9,4 @@ rustup show
 rustc --version --verbose
 cargo --version --verbose
 if [[ ${MAKE_TARGET} == "coverage" ]]; then grcov --version; fi
+if [[ ${MAKE_TARGET} == "audit" ]]; then cargo audit --version; fi

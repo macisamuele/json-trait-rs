@@ -17,6 +17,12 @@ install_python() {
   fi
 }
 
+install_audit() {
+  if [[ ${MAKE_TARGET} == "audit" ]]; then
+    cargo install cargo-audit
+  fi
+}
+
 install_grcov() {
   if [[ ${MAKE_TARGET} == "coverage" ]]; then
     if ! command -v grcov @> /dev/null; then
@@ -68,3 +74,4 @@ install_python
 install_grcov
 download_codecov_bash_script
 install_lint_tools
+install_audit
