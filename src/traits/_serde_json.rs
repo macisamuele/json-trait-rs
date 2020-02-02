@@ -44,7 +44,7 @@ impl<'json> JsonMapTrait<'json, serde_json::Value> for JsonMap<'json, serde_json
 
 impl JsonType<serde_json::Value> for serde_json::Value {
     #[must_use]
-    fn as_array<'json>(&'json self) -> Option<Box<dyn Iterator<Item = &Self> + 'json>> {
+    fn as_array<'json>(&'json self) -> Option<Box<dyn ExactSizeIterator<Item = &Self> + 'json>> {
         if let Some(vec) = self.as_array() {
             Some(Box::new(vec.iter()))
         } else {
