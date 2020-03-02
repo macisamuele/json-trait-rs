@@ -45,7 +45,6 @@ extern crate strum_macros;
 #[macro_use]
 extern crate lazy_static;
 #[cfg(all(test, any(feature = "trait_serde_json", feature = "trait_serde_yaml", feature = "trait_json")))]
-#[cfg(test)]
 #[macro_use]
 extern crate serde_json;
 

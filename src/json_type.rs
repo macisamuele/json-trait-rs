@@ -1,4 +1,4 @@
-use crate::fragment::fragment_components_from_fragment;
+use crate::{fragment::fragment_components_from_fragment, RustType};
 use std::{fmt::Debug, ops::Deref};
 
 #[allow(clippy::module_name_repetitions)]
@@ -48,7 +48,7 @@ impl EnumJsonType {
 
 pub trait JsonMapTrait<'json, T>
 where
-    T: 'json + JsonType<T>,
+    T: 'json + JsonType<T> + Into<RustType>,
 {
     #[must_use]
     fn keys(&'json self) -> Box<dyn Iterator<Item = &str> + 'json> {
@@ -64,12 +64,42 @@ where
     fn items(&'json self) -> Box<dyn Iterator<Item = (&str, &T)> + 'json>;
 }
 
+#[cfg(any(feature = "trait_serde_json", feature = "trait_serde_yaml", feature = "trait_json", feature = "trait_pyo3"))]
+pub(in crate) fn to_rust_type<T>(instance: &T) -> RustType
+where
+    T: JsonType<T> + Into<RustType>,
+    for<'json> JsonMap<'json, T>: JsonMapTrait<'json, T>,
+{
+    use std::collections::HashMap;
+
+    if let Some(array) = instance.as_array() {
+        RustType::from(array.map(|item| to_rust_type(item)).collect::<Vec<_>>())
+    } else if let Some(bool) = instance.as_boolean() {
+        RustType::from(bool)
+    } else if let Some(integer) = instance.as_integer() {
+        RustType::from(integer)
+    } else if instance.is_null() {
+        RustType::from(())
+    } else if let Some(number) = instance.as_number() {
+        RustType::from(number)
+    } else if let Some(object) = instance.as_object() {
+        RustType::from(object.items().map(|(k, v)| (k.into(), to_rust_type(v))).collect::<HashMap<_, _>>())
+    } else if let Some(string) = instance.as_string() {
+        RustType::from(string)
+    } else {
+        #[allow(unsafe_code)]
+        unsafe {
+            unreachable::unreachable()
+        }
+    }
+}
+
 // This trait allows us to have a 1:1 mapping with serde_json, generally used by rust libraries
 // but gives us the power to use different objects from serde_json. This gives us the ability
 // to support usage of different data-types like PyObject from pyo3 in case of python bindings
-pub trait JsonType<T>: Debug
+pub trait JsonType<T>
 where
-    T: JsonType<T>,
+    T: JsonType<T> + Into<RustType>,
 {
     fn as_array<'json>(&'json self) -> Option<Box<dyn ExactSizeIterator<Item = &T> + 'json>>;
     fn as_boolean(&self) -> Option<bool>;
@@ -150,18 +180,18 @@ where
 #[allow(clippy::module_name_repetitions)]
 pub trait ThreadSafeJsonType<T>: JsonType<T> + Sync + Send
 where
-    T: JsonType<T>,
+    T: JsonType<T> + Into<RustType>,
 {
 }
 
 #[derive(Debug)]
 pub struct JsonMap<'json, T>(&'json T)
 where
-    T: JsonType<T>;
+    T: JsonType<T> + Into<RustType>;
 
 impl<'json, T> JsonMap<'json, T>
 where
-    T: JsonType<T>,
+    T: JsonType<T> + Into<RustType>,
 {
     pub fn new(object: &'json T) -> Self {
         Self(object)
@@ -170,7 +200,7 @@ where
 
 impl<'json, T> Deref for JsonMap<'json, T>
 where
-    T: JsonType<T>,
+    T: JsonType<T> + Into<RustType>,
 {
     type Target = T;
 
@@ -183,7 +213,7 @@ where
 #[allow(clippy::module_name_repetitions)]
 pub fn get_fragment<'json, T>(json_object: &'json T, fragment: &str) -> Option<&'json T>
 where
-    T: JsonType<T>,
+    T: JsonType<T> + Into<RustType>,
     for<'_json_map> JsonMap<'_json_map, T>: JsonMapTrait<'_json_map, T>,
 {
     let mut result: Option<&T> = Some(json_object);

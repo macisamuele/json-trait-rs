@@ -1,8 +1,14 @@
 use crate::{
-    json_type::{JsonMap, JsonMapTrait, JsonType},
-    ThreadSafeJsonType,
+    json_type::{to_rust_type, JsonMap, JsonMapTrait, JsonType},
+    RustType, ThreadSafeJsonType,
 };
 use serde_yaml;
+
+impl Into<RustType> for serde_yaml::Value {
+    fn into(self) -> RustType {
+        to_rust_type(&self)
+    }
+}
 
 impl<'json> JsonMapTrait<'json, serde_yaml::Value> for JsonMap<'json, serde_yaml::Value> {
     #[must_use]
