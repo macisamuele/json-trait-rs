@@ -1,6 +1,14 @@
 Changelog
 =========
 
+0.7.0 (2020-03-04)
+------------------
+- `json_trait_rs::JsonType::as_array` returns `ExactSizeIterator` - [PR #24](https://github.com/macisamuele/json-trait-rs/pull/24)
+- Improve `json_trait_rs::RustType` definition to store floats as well - [PR #26](https://github.com/macisamuele/json-trait-rs/pull/26)
+- `json_trait_rs::JsonType` must implement `Into<json_trait_rs::RustType>` - [PR #26](https://github.com/macisamuele/json-trait-rs/pull/26)
+- Rename `json_trait_rs::EnumJsonType` into `json_trait_rs::PrimitiveType` and implement `TryFrom<&str>`, `Into<&str>`, `Hash` and `Debug` - [PR #26](https://github.com/macisamuele/json-trait-rs/pull/26)
+- Define `json_trait_rs::Error` to collect all the errors that the crate might report (based on `failure` crate) - [PR #26](https://github.com/macisamuele/json-trait-rs/pull/26)
+
 0.6.0 (2019-12-19)
 ------------------
 - Relax ``JsonType`` to not be thread safe and define ``ThreadSafeJsonType`` to provide the thread safe version - [PR #22](https://github.com/macisamuele/json-trait-rs/pull/22)
