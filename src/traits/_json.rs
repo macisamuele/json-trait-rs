@@ -1,9 +1,15 @@
 use crate::{
-    json_type::{JsonMap, JsonMapTrait, JsonType},
-    ThreadSafeJsonType,
+    json_type::{to_rust_type, JsonMap, JsonMapTrait, JsonType},
+    RustType, ThreadSafeJsonType,
 };
 use json;
 use std::ops::Index;
+
+impl Into<RustType> for json::JsonValue {
+    fn into(self) -> RustType {
+        to_rust_type(&self)
+    }
+}
 
 impl<'json> JsonMapTrait<'json, json::JsonValue> for JsonMap<'json, json::JsonValue> {
     #[must_use]
@@ -142,17 +148,17 @@ mod tests_json_map_trait {
 
 #[cfg(test)]
 mod tests_primitive_type_trait {
-    use crate::json_type::{EnumJsonType, JsonType};
+    use crate::json_type::{JsonType, PrimitiveType};
     use test_case::test_case;
 
-    #[test_case(&rust_json![[]], EnumJsonType::Array)]
-    #[test_case(&rust_json![true], EnumJsonType::Boolean)]
-    #[test_case(&rust_json![1], EnumJsonType::Integer)]
-    #[test_case(&rust_json![null], EnumJsonType::Null)]
-    #[test_case(&rust_json![1.2], EnumJsonType::Number)]
-    #[test_case(&rust_json![{"prop": "value"}], EnumJsonType::Object)]
-    #[test_case(&rust_json!["string"], EnumJsonType::String)]
-    fn test_primitive_type(value: &json::JsonValue, expected_value: EnumJsonType) {
+    #[test_case(&rust_json![[]], PrimitiveType::Array)]
+    #[test_case(&rust_json![true], PrimitiveType::Boolean)]
+    #[test_case(&rust_json![1], PrimitiveType::Integer)]
+    #[test_case(&rust_json![null], PrimitiveType::Null)]
+    #[test_case(&rust_json![1.2], PrimitiveType::Number)]
+    #[test_case(&rust_json![{"prop": "value"}], PrimitiveType::Object)]
+    #[test_case(&rust_json!["string"], PrimitiveType::String)]
+    fn test_primitive_type(value: &json::JsonValue, expected_value: PrimitiveType) {
         assert_eq!(JsonType::primitive_type(value), expected_value);
     }
 

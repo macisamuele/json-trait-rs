@@ -5,12 +5,13 @@ use crate::{
 use std::{collections::hash_map::HashMap, ops::Deref};
 
 #[allow(clippy::module_name_repetitions)]
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum RustType {
     Null,
     Boolean(bool),
     String(String),
-    Integer(i32),
+    Integer(i128),
+    Number(f64),
     List(Vec<RustType>),
     Object(HashMap<String, RustType>),
 }
@@ -53,7 +54,35 @@ impl From<String> for RustType {
 impl From<i32> for RustType {
     #[must_use]
     fn from(value: i32) -> Self {
+        Self::Integer(value.into())
+    }
+}
+
+impl From<i64> for RustType {
+    #[must_use]
+    fn from(value: i64) -> Self {
+        Self::Integer(value.into())
+    }
+}
+
+impl From<i128> for RustType {
+    #[must_use]
+    fn from(value: i128) -> Self {
         Self::Integer(value)
+    }
+}
+
+impl From<f32> for RustType {
+    #[must_use]
+    fn from(value: f32) -> Self {
+        Self::Number(value.into())
+    }
+}
+
+impl From<f64> for RustType {
+    #[must_use]
+    fn from(value: f64) -> Self {
+        Self::Number(value)
     }
 }
 
@@ -93,7 +122,7 @@ impl JsonType<RustType> for RustType {
     #[must_use]
     fn as_integer(&self) -> Option<i128> {
         if let Self::Integer(v) = self {
-            Some(i128::from(*v))
+            Some(*v)
         } else {
             None
         }
@@ -110,8 +139,8 @@ impl JsonType<RustType> for RustType {
 
     #[must_use]
     fn as_number(&self) -> Option<f64> {
-        if let Self::Integer(v) = self {
-            Some(f64::from(*v))
+        if let Self::Number(v) = self {
+            Some(*v)
         } else {
             None
         }
@@ -206,7 +235,7 @@ mod smoke_test {
         assert_eq!(testing_type_instance.is_boolean(), false);
         assert_eq!(testing_type_instance.is_integer(), true);
         assert_eq!(testing_type_instance.is_null(), false);
-        assert_eq!(testing_type_instance.is_number(), true);
+        assert_eq!(testing_type_instance.is_number(), false);
         assert_eq!(testing_type_instance.is_object(), false);
         assert_eq!(testing_type_instance.is_string(), false);
     }
