@@ -235,6 +235,16 @@ mod tests {
     use crate::rust_type::RustType;
     use test_case::test_case;
 
+    #[test]
+    fn test_ensure_that_jsontype_can_be_made_into_an_object() {
+        // The code will fail to compile if JsonType cannot be made into an object
+        // Adding `fn foo() {}` into the trait will result into
+        // error[E0038]: the trait `json_type::JsonType` cannot be made into an object
+        //     associated function `foo` has no `self` parameter
+        fn check<T>(_v: &dyn JsonType<T>) {}
+        check(&RustType::default())
+    }
+
     #[test_case("array", Some(EnumJsonType::Array))]
     #[test_case("integer", Some(EnumJsonType::Integer))]
     #[test_case("number", Some(EnumJsonType::Number))]
