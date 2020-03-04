@@ -1,5 +1,5 @@
-use crate::{fragment::fragment_components_from_fragment, RustType};
-use std::{fmt::Debug, ops::Deref};
+use crate::{fragment::fragment_components_from_fragment, Error, RustType};
+use std::{convert::TryFrom, fmt::Debug, ops::Deref};
 
 #[allow(clippy::module_name_repetitions)]
 #[derive(Clone, Copy, EnumIter, EnumVariantNames, Eq, Debug, Display, PartialEq)]
@@ -14,26 +14,25 @@ pub enum PrimitiveType {
     String,
 }
 
-impl PrimitiveType {
-    #[must_use]
-    pub fn from_type(type_string: &str) -> Option<Self>
-    where
-        Self: Sized,
-    {
-        match type_string {
-            "array" => Some(Self::Array),
-            "boolean" => Some(Self::Boolean),
-            "integer" => Some(Self::Integer),
-            "null" => Some(Self::Null),
-            "number" => Some(Self::Number),
-            "object" => Some(Self::Object),
-            "string" => Some(Self::String),
-            _ => None,
+impl TryFrom<&str> for PrimitiveType {
+    type Error = Error;
+
+    fn try_from(value: &str) -> Result<Self, Self::Error> {
+        match value {
+            "array" => Ok(Self::Array),
+            "boolean" => Ok(Self::Boolean),
+            "integer" => Ok(Self::Integer),
+            "null" => Ok(Self::Null),
+            "number" => Ok(Self::Number),
+            "object" => Ok(Self::Object),
+            "string" => Ok(Self::String),
+            _ => Err(Error::UnsupportedPrimitiveType { type_str: value.to_string() }),
         }
     }
+}
 
-    #[must_use]
-    pub fn to_type(&self) -> &str {
+impl Into<&str> for PrimitiveType {
+    fn into(self) -> &'static str {
         match self {
             Self::Array => "array",
             Self::Boolean => "boolean",
@@ -231,8 +230,9 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::{get_fragment, JsonType, PrimitiveType};
+    use super::{get_fragment, Error, JsonType, PrimitiveType};
     use crate::rust_type::RustType;
+    use std::convert::TryFrom;
     use test_case::test_case;
 
     #[test]
@@ -245,15 +245,15 @@ mod tests {
         check(&RustType::default())
     }
 
-    #[test_case("array", Some(PrimitiveType::Array))]
-    #[test_case("integer", Some(PrimitiveType::Integer))]
-    #[test_case("number", Some(PrimitiveType::Number))]
-    #[test_case("null", Some(PrimitiveType::Null))]
-    #[test_case("object", Some(PrimitiveType::Object))]
-    #[test_case("string", Some(PrimitiveType::String))]
-    #[test_case("an invalid type", None)]
-    fn test_primitive_type_from_type(type_str: &str, expected_option_primitive_type: Option<PrimitiveType>) {
-        assert_eq!(PrimitiveType::from_type(type_str), expected_option_primitive_type);
+    #[test_case("array", &Ok(PrimitiveType::Array))]
+    #[test_case("integer", &Ok(PrimitiveType::Integer))]
+    #[test_case("number", &Ok(PrimitiveType::Number))]
+    #[test_case("null", &Ok(PrimitiveType::Null))]
+    #[test_case("object", &Ok(PrimitiveType::Object))]
+    #[test_case("string", &Ok(PrimitiveType::String))]
+    #[test_case("an invalid type", &Err(Error::UnsupportedPrimitiveType { type_str: "an invalid type".to_string() }))]
+    fn test_enum_primitive_type_from_type(type_str: &str, expected_result: &Result<PrimitiveType, Error>) {
+        assert_eq!(&PrimitiveType::try_from(type_str), expected_result);
     }
 
     #[test_case(PrimitiveType::Array, "array")]
@@ -263,7 +263,8 @@ mod tests {
     #[test_case(PrimitiveType::Object, "object")]
     #[test_case(PrimitiveType::String, "string")]
     fn test_primitive_type_to_type(primitive_type: PrimitiveType, expected_type_str: &str) {
-        assert_eq!(primitive_type.to_type(), expected_type_str);
+        let type_str: &str = primitive_type.into();
+        assert_eq!(type_str, expected_type_str);
     }
 
     #[test]
