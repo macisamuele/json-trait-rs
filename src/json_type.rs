@@ -2,7 +2,7 @@ use crate::{fragment::fragment_components_from_fragment, RustType};
 use std::{fmt::Debug, ops::Deref};
 
 #[allow(clippy::module_name_repetitions)]
-#[derive(Clone, Copy, EnumIter, Eq, Debug, Display, PartialEq)]
+#[derive(Clone, Copy, EnumIter, EnumVariantNames, Eq, Debug, Display, PartialEq)]
 pub enum PrimitiveType {
     // We assume that all the drafts will have the same primitive types
     Array,

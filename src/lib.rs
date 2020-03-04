@@ -52,10 +52,14 @@ extern crate serde_json;
 #[macro_use]
 pub mod macros;
 
+mod error;
 mod fragment;
 mod json_type;
 mod rust_type;
 pub mod traits;
 
-pub use json_type::{get_fragment, JsonMap, JsonMapTrait, JsonType, PrimitiveType, ThreadSafeJsonType};
-pub use rust_type::RustType;
+pub use crate::{
+    error::Error,
+    json_type::{get_fragment, JsonMap, JsonMapTrait, JsonType, PrimitiveType, ThreadSafeJsonType},
+    rust_type::RustType,
+};
