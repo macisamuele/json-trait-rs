@@ -2,7 +2,6 @@ use crate::{
     json_type::{to_rust_type, JsonMap, JsonMapTrait, JsonType},
     RustType, ThreadSafeJsonType,
 };
-use serde_json;
 
 impl Into<RustType> for serde_json::Value {
     fn into(self) -> RustType {
@@ -120,7 +119,6 @@ impl dyn ThreadSafeJsonType<serde_json::Value> {}
 #[cfg(test)]
 mod tests_json_map_trait {
     use crate::{json_type::JsonMap, JsonMapTrait};
-    use serde_json;
 
     lazy_static! {
         static ref TESTING_MAP: serde_json::Value = json![{"k1": "v1", "k2": "v2"}];
