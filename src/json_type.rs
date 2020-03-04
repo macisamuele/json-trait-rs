@@ -3,7 +3,7 @@ use std::{fmt::Debug, ops::Deref};
 
 #[allow(clippy::module_name_repetitions)]
 #[derive(Clone, Copy, EnumIter, Eq, Debug, Display, PartialEq)]
-pub enum EnumJsonType {
+pub enum PrimitiveType {
     // We assume that all the drafts will have the same primitive types
     Array,
     Boolean,
@@ -14,7 +14,7 @@ pub enum EnumJsonType {
     String,
 }
 
-impl EnumJsonType {
+impl PrimitiveType {
     #[must_use]
     pub fn from_type(type_string: &str) -> Option<Self>
     where
@@ -149,25 +149,25 @@ where
         self.get_attribute(attribute_name).is_some()
     }
 
-    fn primitive_type(&self) -> EnumJsonType
+    fn primitive_type(&self) -> PrimitiveType
     where
         for<'json> JsonMap<'json, T>: JsonMapTrait<'json, T>,
     {
         // This might not be efficient, but it could be comfortable to quickly extract the type especially while debugging
         if self.is_array() {
-            EnumJsonType::Array
+            PrimitiveType::Array
         } else if self.is_boolean() {
-            EnumJsonType::Boolean
+            PrimitiveType::Boolean
         } else if self.is_integer() {
-            EnumJsonType::Integer
+            PrimitiveType::Integer
         } else if self.is_null() {
-            EnumJsonType::Null
+            PrimitiveType::Null
         } else if self.is_number() {
-            EnumJsonType::Number
+            PrimitiveType::Number
         } else if self.is_object() {
-            EnumJsonType::Object
+            PrimitiveType::Object
         } else if self.is_string() {
-            EnumJsonType::String
+            PrimitiveType::String
         } else {
             #[allow(unsafe_code)]
             unsafe {
@@ -220,8 +220,8 @@ where
     for fragment_part in fragment_components_from_fragment(fragment) {
         if let Some(value) = result {
             result = match value.primitive_type() {
-                EnumJsonType::Object => value.get_attribute(fragment_part.as_str()),
-                EnumJsonType::Array => fragment_part.parse::<usize>().map(|index| value.get_index(index)).ok().unwrap_or(None),
+                PrimitiveType::Object => value.get_attribute(fragment_part.as_str()),
+                PrimitiveType::Array => fragment_part.parse::<usize>().map(|index| value.get_index(index)).ok().unwrap_or(None),
                 _ => None,
             };
         }
@@ -231,7 +231,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use super::{get_fragment, EnumJsonType, JsonType};
+    use super::{get_fragment, JsonType, PrimitiveType};
     use crate::rust_type::RustType;
     use test_case::test_case;
 
@@ -245,25 +245,25 @@ mod tests {
         check(&RustType::default())
     }
 
-    #[test_case("array", Some(EnumJsonType::Array))]
-    #[test_case("integer", Some(EnumJsonType::Integer))]
-    #[test_case("number", Some(EnumJsonType::Number))]
-    #[test_case("null", Some(EnumJsonType::Null))]
-    #[test_case("object", Some(EnumJsonType::Object))]
-    #[test_case("string", Some(EnumJsonType::String))]
+    #[test_case("array", Some(PrimitiveType::Array))]
+    #[test_case("integer", Some(PrimitiveType::Integer))]
+    #[test_case("number", Some(PrimitiveType::Number))]
+    #[test_case("null", Some(PrimitiveType::Null))]
+    #[test_case("object", Some(PrimitiveType::Object))]
+    #[test_case("string", Some(PrimitiveType::String))]
     #[test_case("an invalid type", None)]
-    fn test_enum_primitive_type_from_type(type_str: &str, expected_option_enum_primitive_type: Option<EnumJsonType>) {
-        assert_eq!(EnumJsonType::from_type(type_str), expected_option_enum_primitive_type);
+    fn test_primitive_type_from_type(type_str: &str, expected_option_primitive_type: Option<PrimitiveType>) {
+        assert_eq!(PrimitiveType::from_type(type_str), expected_option_primitive_type);
     }
 
-    #[test_case(EnumJsonType::Array, "array")]
-    #[test_case(EnumJsonType::Integer, "integer")]
-    #[test_case(EnumJsonType::Number, "number")]
-    #[test_case(EnumJsonType::Null, "null")]
-    #[test_case(EnumJsonType::Object, "object")]
-    #[test_case(EnumJsonType::String, "string")]
-    fn test_enum_primitive_type_to_type(enum_primitive_type: EnumJsonType, expected_type_str: &str) {
-        assert_eq!(enum_primitive_type.to_type(), expected_type_str);
+    #[test_case(PrimitiveType::Array, "array")]
+    #[test_case(PrimitiveType::Integer, "integer")]
+    #[test_case(PrimitiveType::Number, "number")]
+    #[test_case(PrimitiveType::Null, "null")]
+    #[test_case(PrimitiveType::Object, "object")]
+    #[test_case(PrimitiveType::String, "string")]
+    fn test_primitive_type_to_type(primitive_type: PrimitiveType, expected_type_str: &str) {
+        assert_eq!(primitive_type.to_type(), expected_type_str);
     }
 
     #[test]

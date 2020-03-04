@@ -187,19 +187,19 @@ mod tests_json_map_trait {
 #[cfg(test)]
 mod tests_primitive_type_trait {
     use crate::{
-        json_type::{EnumJsonType, JsonType},
+        json_type::{JsonType, PrimitiveType},
         traits::_pyo3::perform_python_check,
     };
     use test_case::test_case;
 
-    #[test_case("[]", EnumJsonType::Array)]
-    #[test_case("True", EnumJsonType::Boolean)]
-    #[test_case("1", EnumJsonType::Integer)]
-    #[test_case("None", EnumJsonType::Null)]
-    #[test_case("1.2", EnumJsonType::Number)]
-    #[test_case("{'prop': 'value'}", EnumJsonType::Object)]
-    #[test_case("'string'", EnumJsonType::String)]
-    fn test_primitive_type(python_code_string: &str, expected_value: EnumJsonType) {
+    #[test_case("[]", PrimitiveType::Array)]
+    #[test_case("True", PrimitiveType::Boolean)]
+    #[test_case("1", PrimitiveType::Integer)]
+    #[test_case("None", PrimitiveType::Null)]
+    #[test_case("1.2", PrimitiveType::Number)]
+    #[test_case("{'prop': 'value'}", PrimitiveType::Object)]
+    #[test_case("'string'", PrimitiveType::String)]
+    fn test_primitive_type(python_code_string: &str, expected_value: PrimitiveType) {
         perform_python_check(python_code_string, |python_object_ref| {
             assert_eq!(JsonType::primitive_type(python_object_ref), expected_value);
         })

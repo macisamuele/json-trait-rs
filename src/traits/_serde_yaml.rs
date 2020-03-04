@@ -147,17 +147,17 @@ mod tests_yaml_map_trait {
 
 #[cfg(test)]
 mod tests_primitive_type_trait {
-    use crate::json_type::{EnumJsonType, JsonType};
+    use crate::json_type::{JsonType, PrimitiveType};
     use test_case::test_case;
 
-    #[test_case(&yaml![[]], EnumJsonType::Array)]
-    #[test_case(&yaml![true], EnumJsonType::Boolean)]
-    #[test_case(&yaml![1], EnumJsonType::Integer)]
-    #[test_case(&yaml![null], EnumJsonType::Null)]
-    #[test_case(&yaml![1.2], EnumJsonType::Number)]
-    #[test_case(&yaml![{"prop": "value"}], EnumJsonType::Object)]
-    #[test_case(&yaml!["string"], EnumJsonType::String)]
-    fn test_primitive_type(value: &serde_yaml::Value, expected_value: EnumJsonType) {
+    #[test_case(&yaml![[]], PrimitiveType::Array)]
+    #[test_case(&yaml![true], PrimitiveType::Boolean)]
+    #[test_case(&yaml![1], PrimitiveType::Integer)]
+    #[test_case(&yaml![null], PrimitiveType::Null)]
+    #[test_case(&yaml![1.2], PrimitiveType::Number)]
+    #[test_case(&yaml![{"prop": "value"}], PrimitiveType::Object)]
+    #[test_case(&yaml!["string"], PrimitiveType::String)]
+    fn test_primitive_type(value: &serde_yaml::Value, expected_value: PrimitiveType) {
         assert_eq!(JsonType::primitive_type(value), expected_value);
     }
 
