@@ -96,7 +96,7 @@ where
 // This trait allows us to have a 1:1 mapping with serde_json, generally used by rust libraries
 // but gives us the power to use different objects from serde_json. This gives us the ability
 // to support usage of different data-types like PyObject from pyo3 in case of python bindings
-pub trait JsonType<T>
+pub trait JsonType<T>: Debug
 where
     T: JsonType<T> + Into<RustType>,
 {
