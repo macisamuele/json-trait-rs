@@ -1,4 +1,4 @@
-use crate::{json_type::to_rust_type, JsonMap, JsonMapTrait, JsonType, RustType};
+use crate::{json_type::JsonMap, JsonMapTrait, JsonType, RustType};
 #[cfg(test)]
 use pyo3::Python;
 use pyo3::{
@@ -9,7 +9,7 @@ use std::{convert::TryInto, ops::Deref};
 
 impl Into<RustType> for PyAny {
     fn into(self) -> RustType {
-        to_rust_type(&self)
+        self.to_rust_type()
     }
 }
 

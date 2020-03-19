@@ -1,5 +1,5 @@
 use crate::{fragment::fragment_components_from_fragment, Error, RustType};
-use std::{convert::TryFrom, fmt::Debug, ops::Deref};
+use std::{collections::HashMap, convert::TryFrom, fmt::Debug, ops::Deref};
 
 #[allow(clippy::module_name_repetitions)]
 #[derive(Clone, Copy, EnumIter, EnumVariantNames, Eq, Hash, Debug, Display, PartialEq)]
@@ -61,36 +61,6 @@ where
 
     #[must_use]
     fn items(&'json self) -> Box<dyn Iterator<Item = (&str, &T)> + 'json>;
-}
-
-#[cfg(any(feature = "trait_serde_json", feature = "trait_serde_yaml", feature = "trait_json", feature = "trait_pyo3"))]
-pub(in crate) fn to_rust_type<T>(instance: &T) -> RustType
-where
-    T: JsonType<T> + Into<RustType>,
-    for<'json> JsonMap<'json, T>: JsonMapTrait<'json, T>,
-{
-    use std::collections::HashMap;
-
-    if let Some(array) = instance.as_array() {
-        RustType::from(array.map(|item| to_rust_type(item)).collect::<Vec<_>>())
-    } else if let Some(bool) = instance.as_boolean() {
-        RustType::from(bool)
-    } else if let Some(integer) = instance.as_integer() {
-        RustType::from(integer)
-    } else if instance.is_null() {
-        RustType::from(())
-    } else if let Some(number) = instance.as_number() {
-        RustType::from(number)
-    } else if let Some(object) = instance.as_object() {
-        RustType::from(object.items().map(|(k, v)| (k.into(), to_rust_type(v))).collect::<HashMap<_, _>>())
-    } else if let Some(string) = instance.as_string() {
-        RustType::from(string)
-    } else {
-        #[allow(unsafe_code)]
-        unsafe {
-            unreachable::unreachable()
-        }
-    }
 }
 
 // This trait allows us to have a 1:1 mapping with serde_json, generally used by rust libraries
@@ -167,6 +137,32 @@ where
             PrimitiveType::Object
         } else if self.is_string() {
             PrimitiveType::String
+        } else {
+            #[allow(unsafe_code)]
+            unsafe {
+                unreachable::unreachable()
+            }
+        }
+    }
+
+    fn to_rust_type(&self) -> RustType
+    where
+        for<'json> JsonMap<'json, T>: JsonMapTrait<'json, T>,
+    {
+        if let Some(array) = self.as_array() {
+            RustType::from(array.map(|item| item.to_rust_type()).collect::<Vec<_>>())
+        } else if let Some(bool) = self.as_boolean() {
+            RustType::from(bool)
+        } else if let Some(integer) = self.as_integer() {
+            RustType::from(integer)
+        } else if self.is_null() {
+            RustType::from(())
+        } else if let Some(number) = self.as_number() {
+            RustType::from(number)
+        } else if let Some(object) = self.as_object() {
+            RustType::from(object.items().map(|(k, v)| (k.into(), v.to_rust_type())).collect::<HashMap<_, _>>())
+        } else if let Some(string) = self.as_string() {
+            RustType::from(string)
         } else {
             #[allow(unsafe_code)]
             unsafe {

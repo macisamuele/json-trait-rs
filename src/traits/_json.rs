@@ -1,12 +1,12 @@
 use crate::{
-    json_type::{to_rust_type, JsonMap, JsonMapTrait, JsonType},
+    json_type::{JsonMap, JsonMapTrait, JsonType},
     RustType, ThreadSafeJsonType,
 };
 use std::ops::Index;
 
 impl Into<RustType> for json::JsonValue {
     fn into(self) -> RustType {
-        to_rust_type(&self)
+        self.to_rust_type()
     }
 }
 
