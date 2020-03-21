@@ -1,11 +1,11 @@
 use crate::{
-    json_type::{to_rust_type, JsonMap, JsonMapTrait, JsonType},
+    json_type::{JsonMap, JsonMapTrait, JsonType},
     RustType, ThreadSafeJsonType,
 };
 
 impl Into<RustType> for serde_json::Value {
     fn into(self) -> RustType {
-        to_rust_type(&self)
+        self.to_rust_type()
     }
 }
 

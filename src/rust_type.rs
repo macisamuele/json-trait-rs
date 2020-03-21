@@ -184,6 +184,10 @@ impl JsonType<RustType> for RustType {
             None
         }
     }
+
+    fn to_rust_type(&self) -> RustType {
+        self.clone()
+    }
 }
 
 impl ThreadSafeJsonType<RustType> for RustType {}
