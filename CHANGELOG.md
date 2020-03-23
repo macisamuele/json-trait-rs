@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.8.0 (2020-03-23)
+------------------
+- Implement `json_trait_rs::JsonType::to_rust_type` (similar to `Into<RustType>` but from a reference)
+
 0.7.0 (2020-03-04)
 ------------------
 - `json_trait_rs::JsonType::as_array` returns `ExactSizeIterator` - [PR #24](https://github.com/macisamuele/json-trait-rs/pull/24)
