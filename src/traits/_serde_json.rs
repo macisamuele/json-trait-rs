@@ -1,5 +1,5 @@
 use crate::{
-    json_type::{JsonMap, JsonMapTrait, JsonType},
+    json_type::{JsonMap, JsonMapTrait, JsonType, ToRustType},
     RustType, ThreadSafeJsonType,
 };
 
@@ -8,6 +8,8 @@ impl Into<RustType> for serde_json::Value {
         self.to_rust_type()
     }
 }
+
+impl ToRustType for serde_json::Value {}
 
 impl<'json> JsonMapTrait<'json, serde_json::Value> for JsonMap<'json, serde_json::Value> {
     #[must_use]

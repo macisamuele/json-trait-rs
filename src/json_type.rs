@@ -47,7 +47,7 @@ impl Into<&str> for PrimitiveType {
 
 pub trait JsonMapTrait<'json, T>
 where
-    T: 'json + JsonType<T> + Into<RustType>,
+    T: 'json + JsonType<T> + ToRustType + Into<RustType>,
 {
     #[must_use]
     fn keys(&'json self) -> Box<dyn Iterator<Item = &str> + 'json> {
@@ -63,12 +63,43 @@ where
     fn items(&'json self) -> Box<dyn Iterator<Item = (&str, &T)> + 'json>;
 }
 
+pub trait ToRustType
+where
+    Self: JsonType<Self> + Into<RustType>,
+{
+    fn to_rust_type(&self) -> RustType
+    where
+        for<'json> JsonMap<'json, Self>: JsonMapTrait<'json, Self>,
+    {
+        if let Some(array) = self.as_array() {
+            RustType::from(array.map(|item| item.to_rust_type()).collect::<Vec<_>>())
+        } else if let Some(bool) = self.as_boolean() {
+            RustType::from(bool)
+        } else if let Some(integer) = self.as_integer() {
+            RustType::from(integer)
+        } else if self.is_null() {
+            RustType::from(())
+        } else if let Some(number) = self.as_number() {
+            RustType::from(number)
+        } else if let Some(object) = self.as_object() {
+            RustType::from(object.items().map(|(k, v)| (k.into(), v.to_rust_type())).collect::<HashMap<_, _>>())
+        } else if let Some(string) = self.as_string() {
+            RustType::from(string)
+        } else {
+            #[allow(unsafe_code)]
+            unsafe {
+                std::hint::unreachable_unchecked()
+            }
+        }
+    }
+}
+
 // This trait allows us to have a 1:1 mapping with serde_json, generally used by rust libraries
 // but gives us the power to use different objects from serde_json. This gives us the ability
 // to support usage of different data-types like PyObject from pyo3 in case of python bindings
 pub trait JsonType<T>: Debug
 where
-    T: JsonType<T> + Into<RustType>,
+    T: JsonType<T> + ToRustType + Into<RustType>,
 {
     fn as_array<'json>(&'json self) -> Option<Box<dyn ExactSizeIterator<Item = &T> + 'json>>;
     fn as_boolean(&self) -> Option<bool>;
@@ -144,49 +175,23 @@ where
             }
         }
     }
-
-    fn to_rust_type(&self) -> RustType
-    where
-        for<'json> JsonMap<'json, T>: JsonMapTrait<'json, T>,
-    {
-        if let Some(array) = self.as_array() {
-            RustType::from(array.map(|item| item.to_rust_type()).collect::<Vec<_>>())
-        } else if let Some(bool) = self.as_boolean() {
-            RustType::from(bool)
-        } else if let Some(integer) = self.as_integer() {
-            RustType::from(integer)
-        } else if self.is_null() {
-            RustType::from(())
-        } else if let Some(number) = self.as_number() {
-            RustType::from(number)
-        } else if let Some(object) = self.as_object() {
-            RustType::from(object.items().map(|(k, v)| (k.into(), v.to_rust_type())).collect::<HashMap<_, _>>())
-        } else if let Some(string) = self.as_string() {
-            RustType::from(string)
-        } else {
-            #[allow(unsafe_code)]
-            unsafe {
-                std::hint::unreachable_unchecked()
-            }
-        }
-    }
 }
 
 #[allow(clippy::module_name_repetitions)]
 pub trait ThreadSafeJsonType<T>: JsonType<T> + Sync + Send
 where
-    T: JsonType<T> + Into<RustType>,
+    T: JsonType<T> + ToRustType + Into<RustType>,
 {
 }
 
 #[derive(Debug)]
 pub struct JsonMap<'json, T>(&'json T)
 where
-    T: JsonType<T> + Into<RustType>;
+    T: JsonType<T> + ToRustType + Into<RustType>;
 
 impl<'json, T> JsonMap<'json, T>
 where
-    T: JsonType<T> + Into<RustType>,
+    T: JsonType<T> + ToRustType + Into<RustType>,
 {
     pub fn new(object: &'json T) -> Self {
         Self(object)
@@ -195,7 +200,7 @@ where
 
 impl<'json, T> Deref for JsonMap<'json, T>
 where
-    T: JsonType<T> + Into<RustType>,
+    T: JsonType<T> + ToRustType + Into<RustType>,
 {
     type Target = T;
 
@@ -208,7 +213,7 @@ where
 #[allow(clippy::module_name_repetitions)]
 pub fn get_fragment<'json, T>(json_object: &'json T, fragment: &str) -> Option<&'json T>
 where
-    T: JsonType<T> + Into<RustType>,
+    T: JsonType<T> + ToRustType + Into<RustType>,
     for<'_json_map> JsonMap<'_json_map, T>: JsonMapTrait<'_json_map, T>,
 {
     let mut result: Option<&T> = Some(json_object);
