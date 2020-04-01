@@ -17,7 +17,7 @@ impl<'json> JsonMapTrait<'json, serde_json::Value> for JsonMap<'json, serde_json
         } else {
             #[allow(unsafe_code)]
             unsafe {
-                unreachable::unreachable()
+                std::hint::unreachable_unchecked()
             }
         }
     }
@@ -29,7 +29,7 @@ impl<'json> JsonMapTrait<'json, serde_json::Value> for JsonMap<'json, serde_json
         } else {
             #[allow(unsafe_code)]
             unsafe {
-                unreachable::unreachable()
+                std::hint::unreachable_unchecked()
             }
         }
     }
@@ -41,7 +41,7 @@ impl<'json> JsonMapTrait<'json, serde_json::Value> for JsonMap<'json, serde_json
         } else {
             #[allow(unsafe_code)]
             unsafe {
-                unreachable::unreachable()
+                std::hint::unreachable_unchecked()
             }
         }
     }

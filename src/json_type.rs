@@ -140,7 +140,7 @@ where
         } else {
             #[allow(unsafe_code)]
             unsafe {
-                unreachable::unreachable()
+                std::hint::unreachable_unchecked()
             }
         }
     }
@@ -166,7 +166,7 @@ where
         } else {
             #[allow(unsafe_code)]
             unsafe {
-                unreachable::unreachable()
+                std::hint::unreachable_unchecked()
             }
         }
     }
