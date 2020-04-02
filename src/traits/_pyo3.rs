@@ -1,6 +1,6 @@
 use crate::{
     json_type::{JsonMap, JsonMapTrait, JsonType, ToRustType},
-    RustType,
+    rust_type::RustType,
 };
 use pyo3::{
     types::{PyAny, PyDict, PySequence},
@@ -42,7 +42,7 @@ impl<'json> JsonMapTrait<'json, PyAny> for JsonMap<'json, PyAny> {
     }
 }
 
-impl JsonType<PyAny> for PyAny {
+impl JsonType for PyAny {
     #[must_use]
     fn as_array<'json>(&'json self) -> Option<Box<dyn ExactSizeIterator<Item = &Self> + 'json>> {
         match PyTryInto::<PySequence>::try_into(self) {

@@ -1,6 +1,6 @@
 use crate::{
-    json_type::{JsonMap, JsonMapTrait, JsonType, ToRustType},
-    RustType, ThreadSafeJsonType,
+    json_type::{JsonMap, JsonMapTrait, JsonType, ThreadSafeJsonType, ToRustType},
+    rust_type::RustType,
 };
 use std::ops::Index;
 
@@ -29,7 +29,7 @@ impl<'json> JsonMapTrait<'json, json::JsonValue> for JsonMap<'json, json::JsonVa
     }
 }
 
-impl JsonType<json::JsonValue> for json::JsonValue {
+impl JsonType for json::JsonValue {
     #[must_use]
     fn as_array<'json>(&'json self) -> Option<Box<dyn ExactSizeIterator<Item = &Self> + 'json>> {
         if self.is_array() {
@@ -112,7 +112,7 @@ impl JsonType<json::JsonValue> for json::JsonValue {
     }
 }
 
-impl dyn ThreadSafeJsonType<json::JsonValue> {}
+impl ThreadSafeJsonType for json::JsonValue {}
 
 #[cfg(test)]
 mod tests_json_map_trait {
