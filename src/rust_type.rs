@@ -106,7 +106,7 @@ impl ToRustType for RustType {
     }
 }
 
-impl JsonType<RustType> for RustType {
+impl JsonType for RustType {
     #[must_use]
     fn as_array<'json>(&'json self) -> Option<Box<dyn ExactSizeIterator<Item = &Self> + 'json>> {
         if let Self::List(v) = self {
@@ -153,10 +153,7 @@ impl JsonType<RustType> for RustType {
     }
 
     #[must_use]
-    fn as_object(&self) -> Option<JsonMap<Self>>
-    where
-        for<'json> JsonMap<'json, Self>: JsonMapTrait<'json, Self>,
-    {
+    fn as_object(&self) -> Option<JsonMap<Self>> {
         if let Self::Object(_) = self {
             Some(JsonMap::new(self))
         } else {
@@ -192,7 +189,7 @@ impl JsonType<RustType> for RustType {
     }
 }
 
-impl ThreadSafeJsonType<RustType> for RustType {}
+impl ThreadSafeJsonType for RustType {}
 
 impl<'json> JsonMapTrait<'json, RustType> for JsonMap<'json, RustType> {
     #[must_use]
@@ -282,10 +279,8 @@ mod smoke_test {
 
 #[cfg(test)]
 mod json_map_tests {
-    use crate::{
-        json_type::{JsonMapTrait, JsonType},
-        RustType,
-    };
+    use super::RustType;
+    use crate::json_type::{JsonMapTrait, JsonType};
 
     lazy_static! {
         static ref TESTING_MAP: RustType = rust_type_map!(

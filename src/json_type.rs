@@ -47,7 +47,7 @@ impl Into<&str> for PrimitiveType {
 
 pub trait JsonMapTrait<'json, T>
 where
-    T: 'json + JsonType<T> + ToRustType + Into<RustType>,
+    T: 'json + JsonType,
 {
     #[must_use]
     fn keys(&'json self) -> Box<dyn Iterator<Item = &str> + 'json> {
@@ -63,12 +63,10 @@ where
     fn items(&'json self) -> Box<dyn Iterator<Item = (&str, &T)> + 'json>;
 }
 
-pub trait ToRustType
-where
-    Self: JsonType<Self> + Into<RustType>,
-{
+pub trait ToRustType {
     fn to_rust_type(&self) -> RustType
     where
+        Self: Sized + JsonType,
         for<'json> JsonMap<'json, Self>: JsonMapTrait<'json, Self>,
     {
         if let Some(array) = self.as_array() {
@@ -97,24 +95,31 @@ where
 // This trait allows us to have a 1:1 mapping with serde_json, generally used by rust libraries
 // but gives us the power to use different objects from serde_json. This gives us the ability
 // to support usage of different data-types like PyObject from pyo3 in case of python bindings
-pub trait JsonType<T>: Debug
-where
-    T: JsonType<T> + ToRustType + Into<RustType>,
-{
-    fn as_array<'json>(&'json self) -> Option<Box<dyn ExactSizeIterator<Item = &T> + 'json>>;
+pub trait JsonType: Debug + ToRustType {
+    fn as_array<'json>(&'json self) -> Option<Box<dyn ExactSizeIterator<Item = &Self> + 'json>>
+    where
+        Self: Sized;
     fn as_boolean(&self) -> Option<bool>;
     fn as_integer(&self) -> Option<i128>;
     fn as_null(&self) -> Option<()>;
     fn as_number(&self) -> Option<f64>;
-    fn as_object(&self) -> Option<JsonMap<T>>
+    fn as_object(&self) -> Option<JsonMap<Self>>
     where
-        for<'json> JsonMap<'json, T>: JsonMapTrait<'json, T>;
+        Self: Sized,
+        for<'json> JsonMap<'json, Self>: JsonMapTrait<'json, Self>;
     fn as_string(&self) -> Option<&str>;
 
-    fn get_attribute(&self, attribute_name: &str) -> Option<&T>;
-    fn get_index(&self, index: usize) -> Option<&T>;
+    fn get_attribute(&self, attribute_name: &str) -> Option<&Self>
+    where
+        Self: Sized;
+    fn get_index(&self, index: usize) -> Option<&Self>
+    where
+        Self: Sized;
 
-    fn is_array(&self) -> bool {
+    fn is_array(&self) -> bool
+    where
+        Self: Sized,
+    {
         self.as_array().is_some()
     }
 
@@ -136,7 +141,8 @@ where
 
     fn is_object(&self) -> bool
     where
-        for<'json> JsonMap<'json, T>: JsonMapTrait<'json, T>,
+        Self: Sized,
+        for<'json> JsonMap<'json, Self>: JsonMapTrait<'json, Self>,
     {
         self.as_object().is_some()
     }
@@ -145,13 +151,17 @@ where
         self.as_string().is_some()
     }
 
-    fn has_attribute(&self, attribute_name: &str) -> bool {
+    fn has_attribute(&self, attribute_name: &str) -> bool
+    where
+        Self: Sized,
+    {
         self.get_attribute(attribute_name).is_some()
     }
 
     fn primitive_type(&self) -> PrimitiveType
     where
-        for<'json> JsonMap<'json, T>: JsonMapTrait<'json, T>,
+        Self: Sized,
+        for<'json> JsonMap<'json, Self>: JsonMapTrait<'json, Self>,
     {
         // This might not be efficient, but it could be comfortable to quickly extract the type especially while debugging
         if self.is_array() {
@@ -178,20 +188,16 @@ where
 }
 
 #[allow(clippy::module_name_repetitions)]
-pub trait ThreadSafeJsonType<T>: JsonType<T> + Sync + Send
-where
-    T: JsonType<T> + ToRustType + Into<RustType>,
-{
-}
+pub trait ThreadSafeJsonType: JsonType + Sync + Send {}
 
 #[derive(Debug)]
 pub struct JsonMap<'json, T>(&'json T)
 where
-    T: JsonType<T> + ToRustType + Into<RustType>;
+    T: JsonType;
 
 impl<'json, T> JsonMap<'json, T>
 where
-    T: JsonType<T> + ToRustType + Into<RustType>,
+    T: JsonType,
 {
     pub fn new(object: &'json T) -> Self {
         Self(object)
@@ -200,7 +206,7 @@ where
 
 impl<'json, T> Deref for JsonMap<'json, T>
 where
-    T: JsonType<T> + ToRustType + Into<RustType>,
+    T: JsonType,
 {
     type Target = T;
 
@@ -213,10 +219,10 @@ where
 #[allow(clippy::module_name_repetitions)]
 pub fn get_fragment<'json, T>(json_object: &'json T, fragment: &str) -> Option<&'json T>
 where
-    T: JsonType<T> + ToRustType + Into<RustType>,
-    for<'_json_map> JsonMap<'_json_map, T>: JsonMapTrait<'_json_map, T>,
+    T: JsonType,
+    for<'json_map> JsonMap<'json_map, T>: JsonMapTrait<'json_map, T>,
 {
-    let mut result: Option<&T> = Some(json_object);
+    let mut result = Some(json_object);
     for fragment_part in fragment_components_from_fragment(fragment) {
         if let Some(value) = result {
             result = match value.primitive_type() {
@@ -242,7 +248,7 @@ mod tests {
         // Adding `fn foo() {}` into the trait will result into
         // error[E0038]: the trait `json_type::JsonType` cannot be made into an object
         //     associated function `foo` has no `self` parameter
-        fn check<T>(_v: &dyn JsonType<T>) {}
+        fn check(_v: &dyn JsonType) {}
         check(&RustType::default())
     }
 
@@ -270,7 +276,7 @@ mod tests {
 
     #[test]
     fn test_ensure_that_trait_can_be_made_into_an_object() {
-        let _: Option<Box<dyn JsonType<RustType>>> = None;
+        let _: Option<Box<dyn JsonType>> = None;
     }
 
     #[test_case("", &Some(rust_type_map!["key" => rust_type_map!["inner_key" => rust_type_vec![1, "2"]]]))]
