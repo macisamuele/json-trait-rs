@@ -1,5 +1,5 @@
 use crate::{
-    json_type::{JsonMap, JsonMapTrait, JsonType},
+    json_type::{JsonMap, JsonMapTrait, JsonType, ToRustType},
     ThreadSafeJsonType,
 };
 use std::{collections::hash_map::HashMap, ops::Deref};
@@ -100,6 +100,12 @@ impl From<Vec<RustType>> for RustType {
     }
 }
 
+impl ToRustType for RustType {
+    fn to_rust_type(&self) -> RustType {
+        self.clone()
+    }
+}
+
 impl JsonType<RustType> for RustType {
     #[must_use]
     fn as_array<'json>(&'json self) -> Option<Box<dyn ExactSizeIterator<Item = &Self> + 'json>> {
@@ -184,10 +190,6 @@ impl JsonType<RustType> for RustType {
             None
         }
     }
-
-    fn to_rust_type(&self) -> RustType {
-        self.clone()
-    }
 }
 
 impl ThreadSafeJsonType<RustType> for RustType {}
@@ -200,7 +202,7 @@ impl<'json> JsonMapTrait<'json, RustType> for JsonMap<'json, RustType> {
         } else {
             #[allow(unsafe_code)]
             unsafe {
-                unreachable::unreachable()
+                std::hint::unreachable_unchecked()
             }
         }
     }

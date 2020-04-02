@@ -1,5 +1,5 @@
 use crate::{
-    json_type::{JsonMap, JsonMapTrait, JsonType},
+    json_type::{JsonMap, JsonMapTrait, JsonType, ToRustType},
     RustType, ThreadSafeJsonType,
 };
 
@@ -9,6 +9,8 @@ impl Into<RustType> for serde_yaml::Value {
     }
 }
 
+impl ToRustType for serde_yaml::Value {}
+
 impl<'json> JsonMapTrait<'json, serde_yaml::Value> for JsonMap<'json, serde_yaml::Value> {
     #[must_use]
     fn keys(&'json self) -> Box<dyn Iterator<Item = &str> + 'json> {
@@ -17,7 +19,7 @@ impl<'json> JsonMapTrait<'json, serde_yaml::Value> for JsonMap<'json, serde_yaml
         } else {
             #[allow(unsafe_code)]
             unsafe {
-                unreachable::unreachable()
+                std::hint::unreachable_unchecked()
             }
         }
     }
@@ -29,7 +31,7 @@ impl<'json> JsonMapTrait<'json, serde_yaml::Value> for JsonMap<'json, serde_yaml
         } else {
             #[allow(unsafe_code)]
             unsafe {
-                unreachable::unreachable()
+                std::hint::unreachable_unchecked()
             }
         }
     }
@@ -41,7 +43,7 @@ impl<'json> JsonMapTrait<'json, serde_yaml::Value> for JsonMap<'json, serde_yaml
         } else {
             #[allow(unsafe_code)]
             unsafe {
-                unreachable::unreachable()
+                std::hint::unreachable_unchecked()
             }
         }
     }

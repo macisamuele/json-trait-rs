@@ -1,6 +1,7 @@
-use crate::{json_type::JsonMap, JsonMapTrait, JsonType, RustType};
-#[cfg(test)]
-use pyo3::Python;
+use crate::{
+    json_type::{JsonMap, JsonMapTrait, JsonType, ToRustType},
+    RustType,
+};
 use pyo3::{
     types::{PyAny, PyDict, PySequence},
     ObjectProtocol, PyTryInto,
@@ -12,6 +13,8 @@ impl Into<RustType> for PyAny {
         self.to_rust_type()
     }
 }
+
+impl ToRustType for PyAny {}
 
 impl<'json> JsonMapTrait<'json, PyAny> for JsonMap<'json, PyAny> {
     #[must_use]
@@ -133,6 +136,7 @@ impl JsonType<PyAny> for PyAny {
 
 #[cfg(test)]
 fn perform_python_check(python_code_string: &str, check: impl Fn(&PyAny) -> ()) {
+    use pyo3::Python;
     let gil = Python::acquire_gil();
     let py = gil.python();
     check(py.eval(python_code_string, None, None).unwrap())
