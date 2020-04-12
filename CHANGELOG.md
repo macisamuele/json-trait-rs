@@ -1,6 +1,12 @@
 Changelog
 =========
 
+0.9.0 (2020-04-12)
+------------------
+- Update `json_trait_rs::json_type::JsonType` trait to remove generic type from trait and to update trait hierarchy to shorten trait usage - [PR #31](https://github.com/macisamuele/json-trait-rs/pull/31)
+
+WARNING: This reduces the Into<RustType> guarantee (even if we manually guarantee it) and ToRustType does still provide access point to a similar feature
+
 0.8.0 (2020-03-23)
 ------------------
 - Implement `json_trait_rs::JsonType::to_rust_type` (similar to `Into<RustType>` but from a reference)
