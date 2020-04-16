@@ -45,10 +45,7 @@ impl Into<&str> for PrimitiveType {
     }
 }
 
-pub trait JsonMapTrait<'json, T>
-where
-    T: 'json + JsonType,
-{
+pub trait JsonMapTrait<'json, T: 'json + JsonType> {
     #[must_use]
     fn keys(&'json self) -> Box<dyn Iterator<Item = &str> + 'json>;
 
@@ -183,23 +180,15 @@ pub trait JsonType: Debug + ToRustType {
 pub trait ThreadSafeJsonType: JsonType + Sync + Send {}
 
 #[derive(Debug)]
-pub struct JsonMap<'json, T>(&'json T)
-where
-    T: JsonType;
+pub struct JsonMap<'json, T: JsonType>(&'json T);
 
-impl<'json, T> JsonMap<'json, T>
-where
-    T: JsonType,
-{
+impl<'json, T: JsonType> JsonMap<'json, T> {
     pub fn new(object: &'json T) -> Self {
         Self(object)
     }
 }
 
-impl<'json, T> Deref for JsonMap<'json, T>
-where
-    T: JsonType,
-{
+impl<'json, T: JsonType> Deref for JsonMap<'json, T> {
     type Target = T;
 
     #[must_use]
@@ -208,10 +197,7 @@ where
     }
 }
 
-impl<'json, T> JsonMapTrait<'json, T> for JsonMap<'json, T>
-where
-    T: JsonType,
-{
+impl<'json, T: JsonType> JsonMapTrait<'json, T> for JsonMap<'json, T> {
     #[must_use]
     default fn keys(&'json self) -> Box<dyn Iterator<Item = &str> + 'json> {
         Box::new(self.items().map(|(key, _)| key))
@@ -229,10 +215,7 @@ where
 }
 
 #[allow(clippy::module_name_repetitions)]
-pub fn get_fragment<'json, T>(json_object: &'json T, fragment: &str) -> Option<&'json T>
-where
-    T: JsonType,
-{
+pub fn get_fragment<'json, T: JsonType>(json_object: &'json T, fragment: &str) -> Option<&'json T> {
     let mut result = Some(json_object);
     for fragment_part in fragment_components_from_fragment(fragment) {
         if let Some(value) = result {
