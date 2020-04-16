@@ -1,4 +1,5 @@
 language: rust
+rust: nightly
 
 env:
   global:
@@ -11,29 +12,16 @@ matrix:
   - os: linux
     dist: bionic
     env: MAKE_TARGET=coverage
-    rust: nightly  # Running on nightly to ensure that all the traits are actually tested
-  - os: linux
-    dist: bionic
-    rust: stable
-    env: MAKE_TARGET=test-all-flavours
-  - os: linux
-    dist: bionic
-    rust: nightly
-    env: MAKE_TARGET=test-all-flavours
   - os: osx
-    rust: nightly
     env: MAKE_TARGET=test-all-flavours
   - os: windows
-    rust: nightly
     env: MAKE_TARGET=test-all-flavours PYTHON_SYS_EXECUTABLE=/C/Python37/python.exe PATH=${PATH}:/C/Python37/:/C/Python37/Scripts
   - os: linux
     dist: bionic
     env: MAKE_TARGET=doc
-    rust: stable
   - os: linux
     dist: bionic
     env: MAKE_TARGET=audit
-    rust: nightly
   - os: linux
     dist: bionic
     # Before updating this make sure that nighly-YYYY-MM-DD contains either rustfmt and clippy
@@ -41,10 +29,8 @@ matrix:
     #   * `curl -s https://rust-lang.github.io/rustup-components-history/x86_64-unknown-linux-gnu/clippy`
     #   * `curl -s https://rust-lang.github.io/rustup-components-history/x86_64-unknown-linux-gnu/rustfmt`
     # to validate that both tools are available
-    rust: nightly-2020-03-04
+    rust: nightly-2020-04-10
     env: MAKE_TARGET=lint
-  allow_failures:
-  - env: MAKE_TARGET=lint
 
 install:
 - bash scripts/travis/install.sh
