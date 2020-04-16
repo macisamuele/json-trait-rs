@@ -84,10 +84,7 @@ impl JsonType for serde_yaml::Value {
     }
 
     #[must_use]
-    fn as_object(&self) -> Option<JsonMap<Self>>
-    where
-        for<'json> JsonMap<'json, Self>: JsonMapTrait<'json, Self>,
-    {
+    fn as_object(&self) -> Option<JsonMap<Self>> {
         if self.as_mapping().is_some() {
             Some(JsonMap::new(self))
         } else {
