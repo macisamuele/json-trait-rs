@@ -45,19 +45,12 @@ impl Into<&str> for PrimitiveType {
     }
 }
 
-pub trait JsonMapTrait<'json, T>
-where
-    T: 'json + JsonType,
-{
+pub trait JsonMapTrait<'json, T: 'json + JsonType> {
     #[must_use]
-    fn keys(&'json self) -> Box<dyn Iterator<Item = &str> + 'json> {
-        Box::new(self.items().map(|(key, _)| key))
-    }
+    fn keys(&'json self) -> Box<dyn Iterator<Item = &str> + 'json>;
 
     #[must_use]
-    fn values(&'json self) -> Box<dyn Iterator<Item = &T> + 'json> {
-        Box::new(self.items().map(|(_, value)| value))
-    }
+    fn values(&'json self) -> Box<dyn Iterator<Item = &T> + 'json>;
 
     #[must_use]
     fn items(&'json self) -> Box<dyn Iterator<Item = (&str, &T)> + 'json>;
@@ -67,7 +60,6 @@ pub trait ToRustType {
     fn to_rust_type(&self) -> RustType
     where
         Self: Sized + JsonType,
-        for<'json> JsonMap<'json, Self>: JsonMapTrait<'json, Self>,
     {
         if let Some(array) = self.as_array() {
             RustType::from(array.map(|item| item.to_rust_type()).collect::<Vec<_>>())
@@ -105,8 +97,7 @@ pub trait JsonType: Debug + ToRustType {
     fn as_number(&self) -> Option<f64>;
     fn as_object(&self) -> Option<JsonMap<Self>>
     where
-        Self: Sized,
-        for<'json> JsonMap<'json, Self>: JsonMapTrait<'json, Self>;
+        Self: Sized;
     fn as_string(&self) -> Option<&str>;
 
     fn get_attribute(&self, attribute_name: &str) -> Option<&Self>
@@ -142,7 +133,6 @@ pub trait JsonType: Debug + ToRustType {
     fn is_object(&self) -> bool
     where
         Self: Sized,
-        for<'json> JsonMap<'json, Self>: JsonMapTrait<'json, Self>,
     {
         self.as_object().is_some()
     }
@@ -161,7 +151,6 @@ pub trait JsonType: Debug + ToRustType {
     fn primitive_type(&self) -> PrimitiveType
     where
         Self: Sized,
-        for<'json> JsonMap<'json, Self>: JsonMapTrait<'json, Self>,
     {
         // This might not be efficient, but it could be comfortable to quickly extract the type especially while debugging
         if self.is_array() {
@@ -191,23 +180,15 @@ pub trait JsonType: Debug + ToRustType {
 pub trait ThreadSafeJsonType: JsonType + Sync + Send {}
 
 #[derive(Debug)]
-pub struct JsonMap<'json, T>(&'json T)
-where
-    T: JsonType;
+pub struct JsonMap<'json, T: JsonType>(&'json T);
 
-impl<'json, T> JsonMap<'json, T>
-where
-    T: JsonType,
-{
+impl<'json, T: JsonType> JsonMap<'json, T> {
     pub fn new(object: &'json T) -> Self {
         Self(object)
     }
 }
 
-impl<'json, T> Deref for JsonMap<'json, T>
-where
-    T: JsonType,
-{
+impl<'json, T: JsonType> Deref for JsonMap<'json, T> {
     type Target = T;
 
     #[must_use]
@@ -216,12 +197,25 @@ where
     }
 }
 
+impl<'json, T: JsonType> JsonMapTrait<'json, T> for JsonMap<'json, T> {
+    #[must_use]
+    default fn keys(&'json self) -> Box<dyn Iterator<Item = &str> + 'json> {
+        Box::new(self.items().map(|(key, _)| key))
+    }
+
+    #[must_use]
+    default fn values(&'json self) -> Box<dyn Iterator<Item = &T> + 'json> {
+        Box::new(self.items().map(|(_, value)| value))
+    }
+
+    #[must_use]
+    default fn items(&'json self) -> Box<dyn Iterator<Item = (&str, &T)>> {
+        todo!("The library relies on specialization to reduce the amount of trait constraints needed for JsonType. That's why we have this dummy JsonMapTrait::items implementation. NOTE: All the types implementing JsonType trait should take care of implementing at least JsonMapTrait::items as well.")
+    }
+}
+
 #[allow(clippy::module_name_repetitions)]
-pub fn get_fragment<'json, T>(json_object: &'json T, fragment: &str) -> Option<&'json T>
-where
-    T: JsonType,
-    for<'json_map> JsonMap<'json_map, T>: JsonMapTrait<'json_map, T>,
-{
+pub fn get_fragment<'json, T: JsonType>(json_object: &'json T, fragment: &str) -> Option<&'json T> {
     let mut result = Some(json_object);
     for fragment_part in fragment_components_from_fragment(fragment) {
         if let Some(value) = result {

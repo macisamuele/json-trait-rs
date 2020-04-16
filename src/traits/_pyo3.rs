@@ -103,10 +103,7 @@ impl JsonType for PyAny {
     }
 
     #[must_use]
-    fn as_object(&self) -> Option<JsonMap<Self>>
-    where
-        for<'json> JsonMap<'json, Self>: JsonMapTrait<'json, Self>,
-    {
+    fn as_object(&self) -> Option<JsonMap<Self>> {
         PyTryInto::<PyDict>::try_into(self).ok().map(|_| JsonMap::new(self))
     }
 
