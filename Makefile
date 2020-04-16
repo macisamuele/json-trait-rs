@@ -16,12 +16,11 @@ endif
 
 # Usage: $(call call_all_features,makefile_target)
 define call_all_features
-set -eu && \
-    ( \
-        for cargo_args in "" --no-default-features; do CARGO_ARGS="${CARGO_ARGS} $${cargo_args}" ${MAKE} $(1); done; \
-        for feature in $$(bash ${CURDIR}/scripts/cargo-features.sh); do CARGO_ARGS="${CARGO_ARGS} --features '$${feature}'" ${MAKE} $(1); done; \
-        CARGO_ARGS="${CARGO_ARGS} --features '$$(bash ${CURDIR}/scripts/cargo-features.sh)'" ${MAKE} $(1); \
-    )
+( \
+    CARGO_ARGS="--no-default-features ${CARGO_ARGS}" ${MAKE} $(1) && \
+    CARGO_ARGS="${CARGO_ARGS}" ${MAKE} $(1) && \
+    CARGO_ARGS="--all-features ${CARGO_ARGS}" ${MAKE} $(1) \
+)
 endef
 
 .PHONY: development
