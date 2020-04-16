@@ -36,8 +36,6 @@
     unused_variables,
     warnings,
 )]
-// Ignore missing_const_for_fn clippy linter (it's too noisy in regards const fn in traits)
-#![allow(clippy::missing_const_for_fn)]
 
 #[macro_use]
 extern crate strum_macros;
