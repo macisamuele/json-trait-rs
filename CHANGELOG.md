@@ -1,6 +1,10 @@
 Changelog
 =========
 
+0.10.0 (2020-04-18)
+-------------------
+- Use specialization to have default implementation for JsonMap such tht trait constraints would not be required - [PR #33][https://github.com/macisamuele/json-trait-rs/pull/33)
+
 0.9.0 (2020-04-12)
 ------------------
 - Update `json_trait_rs::json_type::JsonType` trait to remove generic type from trait and to update trait hierarchy to shorten trait usage - [PR #31](https://github.com/macisamuele/json-trait-rs/pull/31)
