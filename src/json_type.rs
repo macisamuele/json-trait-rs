@@ -1,4 +1,4 @@
-use crate::{error::Error, fragment::fragment_components_from_fragment, rust_type::RustType};
+use crate::{error::Error, fragment_helpers::fragment_components_from_fragment, rust_type::RustType};
 use std::{collections::HashMap, convert::TryFrom, fmt::Debug, ops::Deref};
 
 #[allow(clippy::module_name_repetitions)]

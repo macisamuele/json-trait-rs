@@ -56,7 +56,7 @@ extern crate serde_json;
 pub mod macros;
 
 mod error;
-mod fragment;
+pub mod fragment_helpers;
 mod json_type;
 mod rust_type;
 pub mod traits;
