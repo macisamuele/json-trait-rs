@@ -36,6 +36,8 @@
     unused_variables,
     warnings,
 )]
+// Enable very pendantic clippy linting
+#![deny(clippy::pedantic, clippy::nursery)]
 // Used by json_type_rs::json_type::JsonMapTrait default implementation by json_type_rs::json_type::JsonMap
 // This is mostly needed to reduce the amount of trait constraints when using json_type_rs::json_type::JsonType
 #![feature(specialization)]
