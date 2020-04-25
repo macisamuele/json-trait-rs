@@ -97,7 +97,7 @@ ${CODECOV_DIR}/codecov.bash:
 
 .PHONY: coverage
 coverage: export CARGO_INCREMENTAL := 0
-coverage: export RUSTFLAGS := ${RUSTFLAGS} -Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Zno-landing-pads
+coverage: export RUSTFLAGS := ${RUSTFLAGS} -Zprofile -Ccodegen-units=1 -Copt-level=0 -Clink-dead-code -Coverflow-checks=off -Zno-landing-pads
 coverage: clean-coverage ${CODECOV_DIR}/codecov.bash
 	@command -v grcov @> /dev/null || (echo "grcov is not yet installed" && cargo install grcov)
 	mkdir --parent ${CURDIR}/.coverage

@@ -1,6 +1,7 @@
 /**/*.rs.bk
 /.coverage/
 /.idea/
+/.vscode/
 /Cargo.lock
 /codecov.bash
 /target/
