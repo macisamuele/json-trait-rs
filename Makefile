@@ -50,7 +50,7 @@ bump-submodules:
 .PHONY: clippy
 clippy:
 	touch src/lib.rs   # touch a file of the rust project to "force" cargo to recompile it so clippy will actually run
-	cargo +${RUST_TOOLCHAIN} clippy --all-targets ${CARGO_ARGS} -- -D clippy::pedantic -D clippy::nursery
+	cargo +${RUST_TOOLCHAIN} clippy --all-targets ${CARGO_ARGS}
 
 .PHONY: clippy-all-flavours
 clippy-all-flavours:
