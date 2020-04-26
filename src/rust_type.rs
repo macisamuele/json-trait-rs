@@ -2,7 +2,8 @@ use crate::{
     json_type::{JsonMap, JsonMapTrait, JsonType, ToRustType},
     ThreadSafeJsonType,
 };
-use std::{collections::hash_map::HashMap, ops::Deref};
+use join_lazy_fmt::Join;
+use std::{collections::hash_map::HashMap, fmt, ops::Deref};
 
 #[allow(clippy::module_name_repetitions)]
 #[derive(Clone, Debug, PartialEq)]
@@ -14,6 +15,28 @@ pub enum RustType {
     Number(f64),
     List(Vec<RustType>),
     Object(HashMap<String, RustType>),
+}
+
+impl fmt::Display for RustType {
+    fn fmt(&self, formatter: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+        match self {
+            Self::Null => write!(formatter, "null"),
+            Self::Boolean(value) => write!(formatter, "{}", value),
+            Self::String(value) => write!(formatter, r#""{}""#, value),
+            Self::Integer(value) => write!(formatter, "{}", value),
+            Self::Number(value) => write!(formatter, "{}", value),
+            Self::List(value) => {
+                write!(formatter, "[")?;
+                write!(formatter, "{}", ",".join(value))?;
+                write!(formatter, "]")
+            }
+            Self::Object(value) => {
+                write!(formatter, "{{")?;
+                write!(formatter, "{}", ",".join(value.iter().map(|(key, value)| { format!(r#""{}":{}"#, key, value) })))?;
+                write!(formatter, "}}")
+            }
+        }
+    }
 }
 
 impl Default for RustType {
@@ -215,6 +238,18 @@ mod smoke_test {
         rust_type::RustType,
     };
     use std::collections::hash_map::HashMap;
+    use test_case::test_case;
+
+    #[test_case(&RustType::from(())  => "null")]
+    #[test_case(&RustType::from(true)  => "true")]
+    #[test_case(&RustType::from(false)  => "false")]
+    #[test_case(&RustType::from(1)  => "1")]
+    #[test_case(&RustType::from(2.3)  => "2.3")]
+    #[test_case(&rust_type_vec![1, 2.3, false]  => "[1,2.3,false]")]
+    #[test_case(&rust_type_map!["key" => "value", "array" => rust_type_vec![rust_type_map!["k"=>"v"]]]  => r#"{"array":[{"k":"v"}],"key":"value"}"#)]
+    fn test_to_string(value: &RustType) -> String {
+        value.to_string()
+    }
 
     #[test]
     fn test_testing_type_instance_string() {
