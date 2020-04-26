@@ -194,7 +194,10 @@ impl ThreadSafeJsonType for RustType {}
 impl<'json> JsonMapTrait<'json, RustType> for JsonMap<'json, RustType> {
     #[must_use]
     fn items(&'json self) -> Box<dyn Iterator<Item = (&str, &RustType)> + 'json> {
-        if let RustType::Object(hash_map) = self.deref() {
+        if let RustType::Object(hash_map) = {
+            #[allow(clippy::explicit_deref_methods)] // Explicit deref call is needed to ensure that &RustType is retrieved from JsonMap
+            &self.deref()
+        } {
             Box::new(hash_map.iter().map(|(k, v)| (k.as_str(), v)))
         } else {
             #[allow(unsafe_code)]
