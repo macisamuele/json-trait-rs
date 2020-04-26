@@ -116,6 +116,18 @@ impl JsonType for serde_yaml::Value {
 impl ThreadSafeJsonType for serde_yaml::Value {}
 
 #[cfg(test)]
+macro_rules! yaml {
+    ($($json:tt)+) => {{
+        use serde_json;
+        use serde_yaml;
+        let thing: serde_yaml::Value = serde_yaml::from_str(
+            serde_json::to_string(&json![$($json)+]).unwrap().as_str(),
+        ).unwrap();
+        thing
+    }};
+}
+
+#[cfg(test)]
 mod tests_yaml_map_trait {
     use crate::json_type::{JsonMap, JsonMapTrait};
 

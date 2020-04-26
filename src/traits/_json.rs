@@ -112,6 +112,18 @@ impl JsonType for json::JsonValue {
 impl ThreadSafeJsonType for json::JsonValue {}
 
 #[cfg(test)]
+macro_rules! rust_json {
+    ($($json:tt)+) => {{
+        use serde_json;
+        use json;
+        let thing: json::JsonValue = json::parse(
+            serde_json::to_string(&json![$($json)+]).unwrap().as_str(),
+        ).unwrap();
+        thing
+    }};
+}
+
+#[cfg(test)]
 mod tests_json_map_trait {
     use crate::{json_type::JsonMap, JsonMapTrait};
 

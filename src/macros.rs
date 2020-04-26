@@ -30,29 +30,3 @@ macro_rules! rust_type_vec {
         RustType::from(thing)
     }};
 }
-
-#[cfg(feature = "trait_json")]
-#[macro_export]
-macro_rules! rust_json {
-    ($($json:tt)+) => {{
-        use serde_json;
-        use json;
-        let thing: json::JsonValue = json::parse(
-            serde_json::to_string(&json![$($json)+]).unwrap().as_str(),
-        ).unwrap();
-        thing
-    }};
-}
-
-#[cfg(feature = "trait_serde_yaml")]
-#[macro_export]
-macro_rules! yaml {
-    ($($json:tt)+) => {{
-        use serde_json;
-        use serde_yaml;
-        let thing: serde_yaml::Value = serde_yaml::from_str(
-            serde_json::to_string(&json![$($json)+]).unwrap().as_str(),
-        ).unwrap();
-        thing
-    }};
-}
