@@ -240,13 +240,12 @@ mod smoke_test {
     use std::collections::hash_map::HashMap;
     use test_case::test_case;
 
-    #[test_case(&RustType::from(())  => "null")]
-    #[test_case(&RustType::from(true)  => "true")]
-    #[test_case(&RustType::from(false)  => "false")]
-    #[test_case(&RustType::from(1)  => "1")]
-    #[test_case(&RustType::from(2.3)  => "2.3")]
-    #[test_case(&rust_type_vec![1, 2.3, false]  => "[1,2.3,false]")]
-    #[test_case(&rust_type_map!["key" => "value", "array" => rust_type_vec![rust_type_map!["k"=>"v"]]]  => r#"{"array":[{"k":"v"}],"key":"value"}"#)]
+    #[test_case(&rust_type!(()) => "null")]
+    #[test_case(&rust_type!(true) => "true")]
+    #[test_case(&rust_type!(false) => "false")]
+    #[test_case(&rust_type!(1) => "1")]
+    #[test_case(&rust_type!(2.3) => "2.3")]
+    #[test_case(&rust_type!([1, 2.3, false]) => "[1,2.3,false]")]
     fn test_to_string(value: &RustType) -> String {
         value.to_string()
     }
@@ -321,11 +320,7 @@ mod json_map_tests {
     use crate::json_type::{JsonMapTrait, JsonType};
 
     lazy_static! {
-        static ref TESTING_MAP: RustType = rust_type_map!(
-            "key1" => rust_type_map!(
-                "key2" => 1,
-            ),
-        );
+        static ref TESTING_MAP: RustType = rust_type!({"key1": {"key2": 1}});
     }
 
     #[test]
