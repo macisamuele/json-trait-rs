@@ -145,6 +145,7 @@ mod tests_json_map_trait {
 #[cfg(test)]
 mod tests_primitive_type_trait {
     use crate::json_type::{JsonType, PrimitiveType};
+    use std::ops::Deref;
     use test_case::test_case;
 
     #[test_case(&json![[]], PrimitiveType::Array)]
@@ -292,11 +293,12 @@ mod tests_primitive_type_trait {
     #[test_case(&json![1.2], &None)]
     #[test_case(&json![{"1": 1}], &Some(json![{"1": 1}]))]
     fn test_as_object(value: &serde_json::Value, expected_value: &Option<serde_json::Value>) {
-        use std::ops::Deref;
-
         assert_eq!(
             match JsonType::as_object(value) {
-                Some(ref v) => Some(v.deref()),
+                Some(ref v) => Some({
+                    #[allow(clippy::explicit_deref_methods)] // Explicit deref call is needed to ensure that &serde_json::Value is retrieved from JsonMap
+                    v.deref()
+                }),
                 None => None,
             },
             expected_value.as_ref(),

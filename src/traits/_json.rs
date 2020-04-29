@@ -112,6 +112,18 @@ impl JsonType for json::JsonValue {
 impl ThreadSafeJsonType for json::JsonValue {}
 
 #[cfg(test)]
+macro_rules! rust_json {
+    ($($json:tt)+) => {{
+        use serde_json;
+        use json;
+        let thing: json::JsonValue = json::parse(
+            serde_json::to_string(&json![$($json)+]).unwrap().as_str(),
+        ).unwrap();
+        thing
+    }};
+}
+
+#[cfg(test)]
 mod tests_json_map_trait {
     use crate::{json_type::JsonMap, JsonMapTrait};
 
@@ -147,6 +159,7 @@ mod tests_json_map_trait {
 #[cfg(test)]
 mod tests_primitive_type_trait {
     use crate::json_type::{JsonType, PrimitiveType};
+    use std::ops::Deref;
     use test_case::test_case;
 
     #[test_case(&rust_json![[]], PrimitiveType::Array)]
@@ -294,11 +307,12 @@ mod tests_primitive_type_trait {
     #[test_case(&rust_json![1.2], &None)]
     #[test_case(&rust_json![{"1": 1}], &Some(rust_json![{"1": 1}]))]
     fn test_as_object(value: &json::JsonValue, expected_value: &Option<json::JsonValue>) {
-        use std::ops::Deref;
-
         assert_eq!(
             match JsonType::as_object(value) {
-                Some(ref v) => Some(v.deref()),
+                Some(ref v) => {
+                    #[allow(clippy::explicit_deref_methods)] // Explicit deref call is needed to ensure that &json::JsonValue is retrieved from JsonMap
+                    Some(v.deref())
+                }
                 None => None,
             },
             expected_value.as_ref(),

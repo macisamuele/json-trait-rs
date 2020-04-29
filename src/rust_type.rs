@@ -2,7 +2,8 @@ use crate::{
     json_type::{JsonMap, JsonMapTrait, JsonType, ToRustType},
     ThreadSafeJsonType,
 };
-use std::{collections::hash_map::HashMap, ops::Deref};
+use join_lazy_fmt::Join;
+use std::{collections::hash_map::HashMap, fmt, ops::Deref};
 
 #[allow(clippy::module_name_repetitions)]
 #[derive(Clone, Debug, PartialEq)]
@@ -14,6 +15,28 @@ pub enum RustType {
     Number(f64),
     List(Vec<RustType>),
     Object(HashMap<String, RustType>),
+}
+
+impl fmt::Display for RustType {
+    fn fmt(&self, formatter: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+        match self {
+            Self::Null => write!(formatter, "null"),
+            Self::Boolean(value) => write!(formatter, "{}", value),
+            Self::String(value) => write!(formatter, r#""{}""#, value),
+            Self::Integer(value) => write!(formatter, "{}", value),
+            Self::Number(value) => write!(formatter, "{}", value),
+            Self::List(value) => {
+                write!(formatter, "[")?;
+                write!(formatter, "{}", ",".join(value))?;
+                write!(formatter, "]")
+            }
+            Self::Object(value) => {
+                write!(formatter, "{{")?;
+                write!(formatter, "{}", ",".join(value.iter().map(|(key, value)| { format!(r#""{}":{}"#, key, value) })))?;
+                write!(formatter, "}}")
+            }
+        }
+    }
 }
 
 impl Default for RustType {
@@ -194,7 +217,10 @@ impl ThreadSafeJsonType for RustType {}
 impl<'json> JsonMapTrait<'json, RustType> for JsonMap<'json, RustType> {
     #[must_use]
     fn items(&'json self) -> Box<dyn Iterator<Item = (&str, &RustType)> + 'json> {
-        if let RustType::Object(hash_map) = self.deref() {
+        if let RustType::Object(hash_map) = {
+            #[allow(clippy::explicit_deref_methods)] // Explicit deref call is needed to ensure that &RustType is retrieved from JsonMap
+            &self.deref()
+        } {
             Box::new(hash_map.iter().map(|(k, v)| (k.as_str(), v)))
         } else {
             #[allow(unsafe_code)]
@@ -212,6 +238,17 @@ mod smoke_test {
         rust_type::RustType,
     };
     use std::collections::hash_map::HashMap;
+    use test_case::test_case;
+
+    #[test_case(&rust_type!(()) => "null")]
+    #[test_case(&rust_type!(true) => "true")]
+    #[test_case(&rust_type!(false) => "false")]
+    #[test_case(&rust_type!(1) => "1")]
+    #[test_case(&rust_type!(2.3) => "2.3")]
+    #[test_case(&rust_type!([1, 2.3, false]) => "[1,2.3,false]")]
+    fn test_to_string(value: &RustType) -> String {
+        value.to_string()
+    }
 
     #[test]
     fn test_testing_type_instance_string() {
@@ -283,11 +320,7 @@ mod json_map_tests {
     use crate::json_type::{JsonMapTrait, JsonType};
 
     lazy_static! {
-        static ref TESTING_MAP: RustType = rust_type_map!(
-            "key1" => rust_type_map!(
-                "key2" => 1,
-            ),
-        );
+        static ref TESTING_MAP: RustType = rust_type!({"key1": {"key2": 1}});
     }
 
     #[test]

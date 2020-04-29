@@ -116,6 +116,18 @@ impl JsonType for serde_yaml::Value {
 impl ThreadSafeJsonType for serde_yaml::Value {}
 
 #[cfg(test)]
+macro_rules! yaml {
+    ($($json:tt)+) => {{
+        use serde_json;
+        use serde_yaml;
+        let thing: serde_yaml::Value = serde_yaml::from_str(
+            serde_json::to_string(&json![$($json)+]).unwrap().as_str(),
+        ).unwrap();
+        thing
+    }};
+}
+
+#[cfg(test)]
 mod tests_yaml_map_trait {
     use crate::json_type::{JsonMap, JsonMapTrait};
 
@@ -145,6 +157,7 @@ mod tests_yaml_map_trait {
 #[cfg(test)]
 mod tests_primitive_type_trait {
     use crate::json_type::{JsonType, PrimitiveType};
+    use std::ops::Deref;
     use test_case::test_case;
 
     #[test_case(&yaml![[]], PrimitiveType::Array)]
@@ -292,11 +305,12 @@ mod tests_primitive_type_trait {
     #[test_case(&yaml![1.2], &None)]
     #[test_case(&yaml![{"1": 1}], &Some(yaml![{"1": 1}]))]
     fn test_as_object(value: &serde_yaml::Value, expected_value: &Option<serde_yaml::Value>) {
-        use std::ops::Deref;
-
         assert_eq!(
             match JsonType::as_object(value) {
-                Some(ref v) => Some(v.deref()),
+                Some(ref v) => Some({
+                    #[allow(clippy::explicit_deref_methods)] // Explicit deref call is needed to ensure that &serde_yaml::Value is retrieved from JsonMap
+                    v.deref()
+                }),
                 None => None,
             },
             expected_value.as_ref(),

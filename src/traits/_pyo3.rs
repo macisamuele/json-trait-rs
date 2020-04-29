@@ -19,7 +19,10 @@ impl ToRustType for PyAny {}
 impl<'json> JsonMapTrait<'json, PyAny> for JsonMap<'json, PyAny> {
     #[must_use]
     fn keys(&'json self) -> Box<dyn Iterator<Item = &str> + 'json> {
-        match PyTryInto::<PyDict>::try_into(self.deref()) {
+        match PyTryInto::<PyDict>::try_into({
+            #[allow(clippy::explicit_deref_methods)] // Explicit deref call is needed to ensure that &PyAny is retrieved from JsonMap
+            self.deref()
+        }) {
             Ok(python_dict) => Box::new(python_dict.iter().filter_map(|(k, _)| k.as_string())),
             Err(_) => Box::new(Vec::with_capacity(0).into_iter()),
         }
@@ -27,7 +30,10 @@ impl<'json> JsonMapTrait<'json, PyAny> for JsonMap<'json, PyAny> {
 
     #[must_use]
     fn values(&'json self) -> Box<dyn Iterator<Item = &PyAny> + 'json> {
-        match PyTryInto::<PyDict>::try_into(self.deref()) {
+        match PyTryInto::<PyDict>::try_into({
+            #[allow(clippy::explicit_deref_methods)] // Explicit deref call is needed to ensure that &PyAny is retrieved from JsonMap
+            self.deref()
+        }) {
             Ok(python_dict) => Box::new(python_dict.iter().map(|(_, v)| v)),
             Err(_) => Box::new(Vec::with_capacity(0).into_iter()),
         }
@@ -35,7 +41,10 @@ impl<'json> JsonMapTrait<'json, PyAny> for JsonMap<'json, PyAny> {
 
     #[must_use]
     fn items(&'json self) -> Box<dyn Iterator<Item = (&str, &PyAny)> + 'json> {
-        match PyTryInto::<PyDict>::try_into(self.deref()) {
+        match PyTryInto::<PyDict>::try_into({
+            #[allow(clippy::explicit_deref_methods)] // Explicit deref call is needed to ensure that &PyAny is retrieved from JsonMap
+            self.deref()
+        }) {
             Ok(python_dict) => Box::new(python_dict.iter().filter_map(|(k, v)| k.as_string().map(|k_string| (k_string, v)).or(None))),
             Err(_) => Box::new(Vec::with_capacity(0).into_iter()),
         }
