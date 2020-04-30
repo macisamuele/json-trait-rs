@@ -235,7 +235,7 @@ impl<'json> JsonMapTrait<'json, RustType> for JsonMap<'json, RustType> {
 mod smoke_test {
     use crate::{
         json_type::{JsonMapTrait, JsonType},
-        rust_type::RustType,
+        rust_type_impl::RustType,
     };
     use std::collections::hash_map::HashMap;
     use test_case::test_case;

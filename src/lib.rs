@@ -58,11 +58,11 @@ pub mod macros;
 mod error;
 pub mod fragment_helpers;
 mod json_type;
-mod rust_type;
+mod rust_type_impl;
 pub mod traits;
 
 pub use crate::{
     error::Error,
     json_type::{get_fragment, JsonMap, JsonMapTrait, JsonType, PrimitiveType, ThreadSafeJsonType, ToRustType},
-    rust_type::RustType,
+    rust_type_impl::RustType,
 };

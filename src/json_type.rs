@@ -1,4 +1,4 @@
-use crate::{error::Error, fragment_helpers::fragment_components_from_fragment, rust_type::RustType};
+use crate::{error::Error, fragment_helpers::fragment_components_from_fragment, rust_type_impl::RustType};
 use std::{collections::HashMap, convert::TryFrom, fmt::Debug, ops::Deref};
 
 #[allow(clippy::module_name_repetitions)]
@@ -232,7 +232,7 @@ pub fn get_fragment<'json, T: JsonType>(json_object: &'json T, fragment: &str) -
 #[cfg(test)]
 mod tests {
     use super::{get_fragment, Error, JsonType, PrimitiveType};
-    use crate::rust_type::RustType;
+    use crate::rust_type_impl::RustType;
     use std::convert::TryFrom;
     use test_case::test_case;
 
