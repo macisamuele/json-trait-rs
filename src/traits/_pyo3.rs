@@ -1,6 +1,6 @@
 use crate::{
     json_type::{JsonMap, JsonMapTrait, JsonType, ToRustType},
-    rust_type::RustType,
+    rust_type_impl::RustType,
 };
 use pyo3::{
     types::{PyAny, PyDict, PySequence},

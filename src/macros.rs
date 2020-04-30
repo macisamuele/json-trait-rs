@@ -211,7 +211,7 @@ macro_rules! rust_type {
 
 #[cfg(test)]
 mod tests {
-    use crate::rust_type::RustType;
+    use crate::rust_type_impl::RustType;
     use std::collections::HashMap;
     use test_case::test_case;
 
