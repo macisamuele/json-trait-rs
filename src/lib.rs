@@ -63,6 +63,6 @@ pub mod traits;
 
 pub use crate::{
     error::Error,
-    json_type::{get_fragment, JsonMap, JsonMapTrait, JsonType, PrimitiveType, ThreadSafeJsonType, ToRustType},
+    json_type::{get_fragment, JsonMap, JsonMapTrait, JsonType, JsonTypeToString, PrimitiveType, ThreadSafeJsonType, ToRustType},
     rust_type_impl::RustType,
 };

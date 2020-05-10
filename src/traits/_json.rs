@@ -1,5 +1,5 @@
 use crate::{
-    json_type::{JsonMap, JsonMapTrait, JsonType, ThreadSafeJsonType, ToRustType},
+    json_type::{JsonMap, JsonMapTrait, JsonType, JsonTypeToString, ThreadSafeJsonType, ToRustType},
     rust_type_impl::RustType,
 };
 use json::JsonValue;
@@ -12,6 +12,12 @@ impl Into<RustType> for JsonValue {
 }
 
 impl ToRustType for JsonValue {}
+
+impl JsonTypeToString for JsonValue {
+    fn to_json_string(&self) -> String {
+        self.to_string()
+    }
+}
 
 impl<'json> JsonMapTrait<'json, JsonValue> for JsonMap<'json, JsonValue> {
     #[must_use]
@@ -117,7 +123,8 @@ macro_rules! rust_json {
     ($($json:tt)+) => {{
         use serde_json;
         use json;
-        let thing: JsonValue = json::parse(
+        #[allow(unused_qualifications)]
+        let thing: json::JsonValue = json::parse(
             serde_json::to_string(&json![$($json)+]).unwrap().as_str(),
         ).unwrap();
         thing
@@ -357,6 +364,28 @@ mod tests_json_map {
         assert_eq!(
             JsonType::as_object(key1).unwrap().items().map(|(k, v)| format!("{} -> {:?}", k, v)).collect::<Vec<_>>(),
             vec![format!("key2 -> {:?}", JsonValue::from(1))],
+        );
+    }
+}
+
+#[cfg(test)]
+mod tests_to_json_string {
+    use crate::json_type::JsonTypeToString;
+
+    #[test]
+    fn smoke_test() {
+        let value = rust_json![[
+            {"array": []},
+            {"boolean": false},
+            {"float": 2.3},
+            {"integer": 1},
+            {"null": null},
+            {"object": {}},
+            {"string": "string"},
+        ]];
+        assert_eq!(
+            value.to_json_string(),
+            r#"[{"array":[]},{"boolean":false},{"float":2.3},{"integer":1},{"null":null},{"object":{}},{"string":"string"}]"#
         );
     }
 }

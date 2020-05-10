@@ -1,5 +1,5 @@
 use crate::{
-    json_type::{JsonMap, JsonMapTrait, JsonType, ToRustType},
+    json_type::{JsonMap, JsonMapTrait, JsonType, JsonTypeToString, ToRustType},
     ThreadSafeJsonType,
 };
 use join_lazy_fmt::Join;
@@ -36,6 +36,12 @@ impl fmt::Display for RustType {
                 write!(formatter, "}}")
             }
         }
+    }
+}
+
+impl JsonTypeToString for RustType {
+    fn to_json_string(&self) -> String {
+        self.to_string()
     }
 }
 
@@ -344,6 +350,28 @@ mod tests_json_map {
         assert_eq!(
             JsonType::as_object(key1).unwrap().items().map(|(k, v)| format!("{} -> {:?}", k, v)).collect::<Vec<_>>(),
             vec![format!("key2 -> {:?}", RustType::from(1))],
+        );
+    }
+}
+
+#[cfg(test)]
+mod tests_to_json_string {
+    use crate::json_type::JsonTypeToString;
+
+    #[test]
+    fn smoke_test() {
+        let value = rust_type![[
+            {"array": []},
+            {"boolean": false},
+            {"float": 2.3},
+            {"integer": 1},
+            {"null": null},
+            {"object": {}},
+            {"string": "string"},
+        ]];
+        assert_eq!(
+            value.to_json_string(),
+            r#"[{"array":[]},{"boolean":false},{"float":2.3},{"integer":1},{"null":null},{"object":{}},{"string":"string"}]"#
         );
     }
 }

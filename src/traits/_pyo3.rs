@@ -410,3 +410,28 @@ mod tests_json_map {
         });
     }
 }
+
+#[cfg(test)]
+mod tests_to_json_string {
+    use super::perform_python_check;
+    use crate::json_type::JsonTypeToString;
+
+    #[test]
+    fn smoke_test() {
+        let value_str = r#"[
+            {"array": []},
+            {"boolean": False},
+            {"float": 2.3},
+            {"integer": 1},
+            {"null": None},
+            {"object": {}},
+            {"string": "string"},
+        ]"#;
+        perform_python_check(value_str, |python_object_ref| {
+            assert_eq!(
+                python_object_ref.to_json_string(),
+                r#"[{"array":[]},{"boolean":false},{"float":2.3},{"integer":1},{"null":null},{"object":{}},{"string":"string"}]"#
+            );
+        });
+    }
+}

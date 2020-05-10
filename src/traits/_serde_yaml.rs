@@ -362,3 +362,25 @@ mod tests_json_map {
         );
     }
 }
+
+#[cfg(test)]
+mod tests_to_json_string {
+    use crate::json_type::JsonTypeToString;
+
+    #[test]
+    fn smoke_test() {
+        let value = yaml![[
+            {"array": []},
+            {"boolean": false},
+            {"float": 2.3},
+            {"integer": 1},
+            {"null": null},
+            {"object": {}},
+            {"string": "string"},
+        ]];
+        assert_eq!(
+            value.to_json_string(),
+            r#"[{"array":[]},{"boolean":false},{"float":2.3},{"integer":1},{"null":null},{"object":{}},{"string":"string"}]"#
+        );
+    }
+}
