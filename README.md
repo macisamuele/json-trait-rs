@@ -7,6 +7,7 @@
 [Changelog](./CHANGELOG.md)
 
 ## Rationale
+
 The goal of this repository is to offer rust interfaces (aka traits) to deal with objects as they are JSON objects.
 
 While dealing with JSON objects in rust we tend to use libraries that takes care of the serialisation and desrialisation
@@ -19,4 +20,5 @@ capability to objects that might be initialised by foreign languages (think to o
 [FFI](https://en.wikipedia.org/wiki/Foreign_function_interface)).
 
 ## Contribution rules
+
 Coming soon
