@@ -1,6 +1,13 @@
 Changelog
 =========
 
+0.11.0 (2020-05-10)
+-------------------
+
+- Enhanced macros for the creation of `RustType` instances - [PR #37](https://github.com/macisamuele/json-trait-rs/pull/37)
+- Expose `fragment_helpers` module - [PR #38](https://github.com/macisamuele/json-trait-rs/pull/38)
+- Define `JsonTypeToString` trait and ensure that `JsonType` type need to be `JsonTypeToString` types as well - [PR #41](https://github.com/macisamuele/json-trait-rs/pull/41)
+
 0.10.0 (2020-04-18)
 -------------------
 
