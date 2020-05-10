@@ -2,6 +2,8 @@ use crate::{
     json_type::{JsonMap, JsonMapTrait, JsonType, ToRustType},
     rust_type_impl::RustType,
 };
+#[cfg(test)]
+use pyo3::Python;
 use pyo3::{
     types::{PyAny, PyDict, PySequence},
     ObjectProtocol, PyTryInto,
@@ -142,7 +144,6 @@ impl JsonType for PyAny {
 
 #[cfg(test)]
 fn perform_python_check(python_code_string: &str, check: impl Fn(&PyAny) -> ()) {
-    use pyo3::Python;
     let gil = Python::acquire_gil();
     let py = gil.python();
     check(py.eval(python_code_string, None, None).unwrap())
@@ -150,7 +151,8 @@ fn perform_python_check(python_code_string: &str, check: impl Fn(&PyAny) -> ()) 
 
 #[cfg(test)]
 mod tests_json_map_trait {
-    use crate::{json_type::JsonMap, traits::_pyo3::perform_python_check, JsonMapTrait};
+    use super::perform_python_check;
+    use crate::json_type::{JsonMap, JsonMapTrait};
     use std::collections::HashSet;
 
     lazy_static! {
@@ -196,10 +198,8 @@ mod tests_json_map_trait {
 
 #[cfg(test)]
 mod tests_primitive_type_trait {
-    use crate::{
-        json_type::{JsonType, PrimitiveType},
-        traits::_pyo3::perform_python_check,
-    };
+    use super::perform_python_check;
+    use crate::json_type::{JsonType, PrimitiveType};
     use test_case::test_case;
 
     #[test_case("[]", PrimitiveType::Array)]
@@ -372,8 +372,9 @@ mod tests_primitive_type_trait {
 }
 
 #[cfg(test)]
-mod json_map_tests {
-    use crate::{traits::_pyo3::perform_python_check, JsonMapTrait, JsonType};
+mod tests_json_map {
+    use super::perform_python_check;
+    use crate::json_type::{JsonMapTrait, JsonType};
 
     lazy_static! {
         static ref PYTHON_TESTING_MAP_STR: &'static str = "{'key1': {'key2': 1}}";

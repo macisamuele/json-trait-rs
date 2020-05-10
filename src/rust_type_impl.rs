@@ -315,7 +315,7 @@ mod smoke_test {
 }
 
 #[cfg(test)]
-mod json_map_tests {
+mod tests_json_map {
     use super::RustType;
     use crate::json_type::{JsonMapTrait, JsonType};
 
