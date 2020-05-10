@@ -1,35 +1,42 @@
 use crate::{
-    json_type::{JsonMap, JsonMapTrait, JsonType, ThreadSafeJsonType, ToRustType},
+    json_type::{JsonMap, JsonMapTrait, JsonType, JsonTypeToString, ThreadSafeJsonType, ToRustType},
     rust_type_impl::RustType,
 };
+use json::JsonValue;
 use std::ops::Index;
 
-impl Into<RustType> for json::JsonValue {
+impl Into<RustType> for JsonValue {
     fn into(self) -> RustType {
         self.to_rust_type()
     }
 }
 
-impl ToRustType for json::JsonValue {}
+impl ToRustType for JsonValue {}
 
-impl<'json> JsonMapTrait<'json, json::JsonValue> for JsonMap<'json, json::JsonValue> {
+impl JsonTypeToString for JsonValue {
+    fn to_json_string(&self) -> String {
+        self.to_string()
+    }
+}
+
+impl<'json> JsonMapTrait<'json, JsonValue> for JsonMap<'json, JsonValue> {
     #[must_use]
     fn keys(&'json self) -> Box<dyn Iterator<Item = &str> + 'json> {
         Box::new(self.entries().map(|(key, _)| key))
     }
 
     #[must_use]
-    fn values(&'json self) -> Box<dyn Iterator<Item = &json::JsonValue> + 'json> {
+    fn values(&'json self) -> Box<dyn Iterator<Item = &JsonValue> + 'json> {
         Box::new(self.entries().map(|(_, value)| value))
     }
 
     #[must_use]
-    fn items(&'json self) -> Box<dyn Iterator<Item = (&str, &json::JsonValue)> + 'json> {
+    fn items(&'json self) -> Box<dyn Iterator<Item = (&str, &JsonValue)> + 'json> {
         Box::new(self.entries())
     }
 }
 
-impl JsonType for json::JsonValue {
+impl JsonType for JsonValue {
     #[must_use]
     fn as_array<'json>(&'json self) -> Option<Box<dyn ExactSizeIterator<Item = &Self> + 'json>> {
         if self.is_array() {
@@ -109,13 +116,14 @@ impl JsonType for json::JsonValue {
     }
 }
 
-impl ThreadSafeJsonType for json::JsonValue {}
+impl ThreadSafeJsonType for JsonValue {}
 
 #[cfg(test)]
 macro_rules! rust_json {
     ($($json:tt)+) => {{
         use serde_json;
         use json;
+        #[allow(unused_qualifications)]
         let thing: json::JsonValue = json::parse(
             serde_json::to_string(&json![$($json)+]).unwrap().as_str(),
         ).unwrap();
@@ -125,33 +133,31 @@ macro_rules! rust_json {
 
 #[cfg(test)]
 mod tests_json_map_trait {
-    use crate::{json_type::JsonMap, JsonMapTrait};
+    use crate::json_type::{JsonMap, JsonMapTrait};
+    use json::JsonValue;
 
     lazy_static! {
-        static ref TESTING_MAP: json::JsonValue = rust_json![{"k1": "v1", "k2": "v2"}];
+        static ref TESTING_MAP: JsonValue = rust_json![{"k1": "v1", "k2": "v2"}];
     }
 
     #[test]
     fn keys() {
-        let testing_map: &json::JsonValue = &TESTING_MAP;
+        let testing_map: &JsonValue = &TESTING_MAP;
         assert_eq!(JsonMap::new(testing_map).keys().collect::<Vec<_>>(), vec!["k1", "k2"]);
     }
 
     #[test]
     fn values() {
-        let testing_map: &json::JsonValue = &TESTING_MAP;
-        assert_eq!(
-            JsonMap::new(testing_map).values().collect::<Vec<_>>(),
-            vec![&json::JsonValue::from("v1"), &json::JsonValue::from("v2")]
-        );
+        let testing_map: &JsonValue = &TESTING_MAP;
+        assert_eq!(JsonMap::new(testing_map).values().collect::<Vec<_>>(), vec![&JsonValue::from("v1"), &JsonValue::from("v2")]);
     }
 
     #[test]
     fn items() {
-        let testing_map: &json::JsonValue = &TESTING_MAP;
+        let testing_map: &JsonValue = &TESTING_MAP;
         assert_eq!(
             JsonMap::new(testing_map).items().collect::<Vec<_>>(),
-            vec![("k1", &json::JsonValue::from("v1")), ("k2", &json::JsonValue::from("v2"))]
+            vec![("k1", &JsonValue::from("v1")), ("k2", &JsonValue::from("v2"))]
         );
     }
 }
@@ -159,6 +165,7 @@ mod tests_json_map_trait {
 #[cfg(test)]
 mod tests_primitive_type_trait {
     use crate::json_type::{JsonType, PrimitiveType};
+    use json::JsonValue;
     use std::ops::Deref;
     use test_case::test_case;
 
@@ -169,26 +176,26 @@ mod tests_primitive_type_trait {
     #[test_case(&rust_json![1.2], PrimitiveType::Number)]
     #[test_case(&rust_json![{"prop": "value"}], PrimitiveType::Object)]
     #[test_case(&rust_json!["string"], PrimitiveType::String)]
-    fn test_primitive_type(value: &json::JsonValue, expected_value: PrimitiveType) {
+    fn test_primitive_type(value: &JsonValue, expected_value: PrimitiveType) {
         assert_eq!(JsonType::primitive_type(value), expected_value);
     }
 
     #[test_case(&rust_json![{"present": 1}], "present", &Some(rust_json![1]))]
     #[test_case(&rust_json![{"present": 1}], "not-present", &None)]
-    fn test_get_attribute(value: &json::JsonValue, attribute_name: &str, expected_value: &Option<json::JsonValue>) {
+    fn test_get_attribute(value: &JsonValue, attribute_name: &str, expected_value: &Option<JsonValue>) {
         assert_eq!(JsonType::get_attribute(value, attribute_name), expected_value.as_ref());
     }
 
     #[test_case(&rust_json![[0, 1, 2]], 1, &Some(rust_json![1]))]
     #[test_case(&rust_json![[0, 1, 2]], 4, &None)]
-    fn test_get_index(value: &json::JsonValue, index: usize, expected_value: &Option<json::JsonValue>) {
+    fn test_get_index(value: &JsonValue, index: usize, expected_value: &Option<JsonValue>) {
         assert_eq!(JsonType::get_index(value, index), expected_value.as_ref());
     }
 
     #[test_case(&rust_json![{"present": 1}], "present", true)]
     #[test_case(&rust_json![{"present": 1}], "not-present", false)]
     #[test_case(&rust_json![[1, 2, 3]], "not-present", false)]
-    fn test_has_attribute(value: &json::JsonValue, attr_name: &str, expected_value: bool) {
+    fn test_has_attribute(value: &JsonValue, attr_name: &str, expected_value: bool) {
         assert_eq!(JsonType::has_attribute(value, attr_name), expected_value);
     }
 
@@ -199,7 +206,7 @@ mod tests_primitive_type_trait {
     #[test_case(&rust_json![1.2_f32], false)]
     #[test_case(&rust_json![{"key": "value"}], false)]
     #[test_case(&rust_json!["string"], false)]
-    fn test_is_array(value: &json::JsonValue, expected_value: bool) {
+    fn test_is_array(value: &JsonValue, expected_value: bool) {
         assert_eq!(JsonType::is_array(value), expected_value);
     }
 
@@ -210,7 +217,7 @@ mod tests_primitive_type_trait {
     #[test_case(&rust_json![1.2_f32], false)]
     #[test_case(&rust_json![{"key": "value"}], false)]
     #[test_case(&rust_json!["string"], false)]
-    fn test_is_boolean(value: &json::JsonValue, expected_value: bool) {
+    fn test_is_boolean(value: &JsonValue, expected_value: bool) {
         assert_eq!(JsonType::is_boolean(value), expected_value);
     }
 
@@ -221,7 +228,7 @@ mod tests_primitive_type_trait {
     #[test_case(&rust_json![1.2_f32], false)]
     #[test_case(&rust_json![{"key": "value"}], false)]
     #[test_case(&rust_json!["string"], false)]
-    fn test_is_integer(value: &json::JsonValue, expected_value: bool) {
+    fn test_is_integer(value: &JsonValue, expected_value: bool) {
         assert_eq!(JsonType::is_integer(value), expected_value);
     }
 
@@ -232,7 +239,7 @@ mod tests_primitive_type_trait {
     #[test_case(&rust_json![1.2_f32], false)]
     #[test_case(&rust_json![{"key": "value"}], false)]
     #[test_case(&rust_json!["string"], false)]
-    fn test_is_null(value: &json::JsonValue, expected_value: bool) {
+    fn test_is_null(value: &JsonValue, expected_value: bool) {
         assert_eq!(JsonType::is_null(value), expected_value);
     }
 
@@ -243,7 +250,7 @@ mod tests_primitive_type_trait {
     #[test_case(&rust_json![1.2_f32], true)]
     #[test_case(&rust_json![{"key": "value"}], false)]
     #[test_case(&rust_json!["string"], false)]
-    fn test_is_number(value: &json::JsonValue, expected_value: bool) {
+    fn test_is_number(value: &JsonValue, expected_value: bool) {
         assert_eq!(JsonType::is_number(value), expected_value);
     }
 
@@ -254,7 +261,7 @@ mod tests_primitive_type_trait {
     #[test_case(&rust_json![1.2_f32], false)]
     #[test_case(&rust_json![{"key": "value"}], true)]
     #[test_case(&rust_json!["string"], false)]
-    fn test_is_object(value: &json::JsonValue, expected_value: bool) {
+    fn test_is_object(value: &JsonValue, expected_value: bool) {
         assert_eq!(JsonType::is_object(value), expected_value);
     }
 
@@ -265,52 +272,52 @@ mod tests_primitive_type_trait {
     #[test_case(&rust_json![1.2_f32], false)]
     #[test_case(&rust_json![{"key": "value"}], false)]
     #[test_case(&rust_json!["string"], true)]
-    fn test_is_string(value: &json::JsonValue, expected_value: bool) {
+    fn test_is_string(value: &JsonValue, expected_value: bool) {
         assert_eq!(JsonType::is_string(value), expected_value);
     }
 
     #[test_case(&rust_json![[1]], &Some(vec![rust_json![1]]))]
     #[test_case(&rust_json![[1, "a"]], &Some(vec![rust_json![1], rust_json!["a"]]))]
     #[test_case(&rust_json![null], &None)]
-    fn test_as_array(value: &json::JsonValue, expected_value: &Option<Vec<json::JsonValue>>) {
+    fn test_as_array(value: &JsonValue, expected_value: &Option<Vec<JsonValue>>) {
         assert_eq!(&JsonType::as_array(value).map(|iterator| iterator.cloned().collect()), expected_value);
     }
 
     #[test_case(&rust_json![true], Some(true))]
     #[test_case(&rust_json![false], Some(false))]
     #[test_case(&rust_json![1], None)]
-    fn test_as_boolean(value: &json::JsonValue, expected_value: Option<bool>) {
+    fn test_as_boolean(value: &JsonValue, expected_value: Option<bool>) {
         assert_eq!(JsonType::as_boolean(value), expected_value);
     }
 
     #[test_case(&rust_json![1], Some(1))]
     #[test_case(&rust_json![1.2], None)]
     #[test_case(&rust_json!["1"], None)]
-    fn test_as_integer(value: &json::JsonValue, expected_value: Option<i128>) {
+    fn test_as_integer(value: &JsonValue, expected_value: Option<i128>) {
         assert_eq!(JsonType::as_integer(value), expected_value);
     }
 
     #[test_case(&rust_json![null], Some(()))]
     #[test_case(&rust_json!["1"], None)]
-    fn test_as_null(value: &json::JsonValue, expected_value: Option<()>) {
+    fn test_as_null(value: &JsonValue, expected_value: Option<()>) {
         assert_eq!(JsonType::as_null(value), expected_value);
     }
 
     #[test_case(&rust_json![1], Some(1_f64))]
     #[test_case(&rust_json![1.2], Some(1.2))]
     #[test_case(&rust_json!["1"], None)]
-    fn test_as_number(value: &json::JsonValue, expected_value: Option<f64>) {
+    fn test_as_number(value: &JsonValue, expected_value: Option<f64>) {
         assert_eq!(JsonType::as_number(value), expected_value);
     }
 
     #[test_case(&rust_json![1], &None)]
     #[test_case(&rust_json![1.2], &None)]
     #[test_case(&rust_json![{"1": 1}], &Some(rust_json![{"1": 1}]))]
-    fn test_as_object(value: &json::JsonValue, expected_value: &Option<json::JsonValue>) {
+    fn test_as_object(value: &JsonValue, expected_value: &Option<JsonValue>) {
         assert_eq!(
             match JsonType::as_object(value) {
                 Some(ref v) => {
-                    #[allow(clippy::explicit_deref_methods)] // Explicit deref call is needed to ensure that &json::JsonValue is retrieved from JsonMap
+                    #[allow(clippy::explicit_deref_methods)] // Explicit deref call is needed to ensure that &JsonValue is retrieved from JsonMap
                     Some(v.deref())
                 }
                 None => None,
@@ -322,17 +329,18 @@ mod tests_primitive_type_trait {
     #[test_case(&rust_json![1], None)]
     #[test_case(&rust_json![1.2], None)]
     #[test_case(&rust_json!["1"], Some("1"))]
-    fn test_as_string(value: &json::JsonValue, expected_value: Option<&str>) {
+    fn test_as_string(value: &JsonValue, expected_value: Option<&str>) {
         assert_eq!(JsonType::as_string(value), expected_value);
     }
 }
 
 #[cfg(test)]
-mod json_map_tests {
+mod tests_json_map {
     use crate::json_type::{JsonMapTrait, JsonType};
+    use json::JsonValue;
 
     lazy_static! {
-        static ref TESTING_MAP: json::JsonValue = rust_json![{"key1": {"key2": 1}}];
+        static ref TESTING_MAP: JsonValue = rust_json![{"key1": {"key2": 1}}];
     }
 
     #[test]
@@ -346,7 +354,7 @@ mod json_map_tests {
         let key1 = TESTING_MAP.get_attribute("key1").unwrap();
         assert_eq!(
             JsonType::as_object(key1).unwrap().values().map(|v| format!("{:?}", v)).collect::<Vec<_>>(),
-            vec![format!("{:?}", json::JsonValue::from(1))],
+            vec![format!("{:?}", JsonValue::from(1))],
         );
     }
 
@@ -355,7 +363,29 @@ mod json_map_tests {
         let key1 = TESTING_MAP.get_attribute("key1").unwrap();
         assert_eq!(
             JsonType::as_object(key1).unwrap().items().map(|(k, v)| format!("{} -> {:?}", k, v)).collect::<Vec<_>>(),
-            vec![format!("key2 -> {:?}", json::JsonValue::from(1))],
+            vec![format!("key2 -> {:?}", JsonValue::from(1))],
+        );
+    }
+}
+
+#[cfg(test)]
+mod tests_to_json_string {
+    use crate::json_type::JsonTypeToString;
+
+    #[test]
+    fn smoke_test() {
+        let value = rust_json![[
+            {"array": []},
+            {"boolean": false},
+            {"float": 2.3},
+            {"integer": 1},
+            {"null": null},
+            {"object": {}},
+            {"string": "string"},
+        ]];
+        assert_eq!(
+            value.to_json_string(),
+            r#"[{"array":[]},{"boolean":false},{"float":2.3},{"integer":1},{"null":null},{"object":{}},{"string":"string"}]"#
         );
     }
 }

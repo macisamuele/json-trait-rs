@@ -2,16 +2,17 @@ use crate::{
     json_type::{JsonMap, JsonMapTrait, JsonType, ThreadSafeJsonType, ToRustType},
     rust_type_impl::RustType,
 };
+use serde_yaml::Value;
 
-impl Into<RustType> for serde_yaml::Value {
+impl Into<RustType> for Value {
     fn into(self) -> RustType {
         self.to_rust_type()
     }
 }
 
-impl ToRustType for serde_yaml::Value {}
+impl ToRustType for Value {}
 
-impl<'json> JsonMapTrait<'json, serde_yaml::Value> for JsonMap<'json, serde_yaml::Value> {
+impl<'json> JsonMapTrait<'json, Value> for JsonMap<'json, Value> {
     #[must_use]
     fn keys(&'json self) -> Box<dyn Iterator<Item = &str> + 'json> {
         if let Some(obj) = self.as_mapping() {
@@ -25,7 +26,7 @@ impl<'json> JsonMapTrait<'json, serde_yaml::Value> for JsonMap<'json, serde_yaml
     }
 
     #[must_use]
-    fn values(&'json self) -> Box<dyn Iterator<Item = &serde_yaml::Value> + 'json> {
+    fn values(&'json self) -> Box<dyn Iterator<Item = &Value> + 'json> {
         if let Some(obj) = self.as_mapping() {
             Box::new(obj.iter().map(|(_, value)| value))
         } else {
@@ -37,7 +38,7 @@ impl<'json> JsonMapTrait<'json, serde_yaml::Value> for JsonMap<'json, serde_yaml
     }
 
     #[must_use]
-    fn items(&'json self) -> Box<dyn Iterator<Item = (&str, &serde_yaml::Value)> + 'json> {
+    fn items(&'json self) -> Box<dyn Iterator<Item = (&str, &Value)> + 'json> {
         if let Some(obj) = self.as_mapping() {
             Box::new(obj.iter().map(|(key, value)| (key.as_str().unwrap(), value)))
         } else {
@@ -49,7 +50,7 @@ impl<'json> JsonMapTrait<'json, serde_yaml::Value> for JsonMap<'json, serde_yaml
     }
 }
 
-impl JsonType for serde_yaml::Value {
+impl JsonType for Value {
     #[must_use]
     fn as_array<'json>(&'json self) -> Option<Box<dyn ExactSizeIterator<Item = &Self> + 'json>> {
         if let Some(vec) = self.as_sequence() {
@@ -113,13 +114,14 @@ impl JsonType for serde_yaml::Value {
     }
 }
 
-impl ThreadSafeJsonType for serde_yaml::Value {}
+impl ThreadSafeJsonType for Value {}
 
 #[cfg(test)]
 macro_rules! yaml {
     ($($json:tt)+) => {{
         use serde_json;
         use serde_yaml;
+        #[allow(unused_qualifications)]
         let thing: serde_yaml::Value = serde_yaml::from_str(
             serde_json::to_string(&json![$($json)+]).unwrap().as_str(),
         ).unwrap();
@@ -130,26 +132,27 @@ macro_rules! yaml {
 #[cfg(test)]
 mod tests_yaml_map_trait {
     use crate::json_type::{JsonMap, JsonMapTrait};
+    use serde_yaml::Value;
 
     lazy_static! {
-        static ref TESTING_MAP: serde_yaml::Value = yaml![{"k1": "v1", "k2": "v2"}];
+        static ref TESTING_MAP: Value = yaml![{"k1": "v1", "k2": "v2"}];
     }
 
     #[test]
     fn keys() {
-        let testing_map: &serde_yaml::Value = &TESTING_MAP;
+        let testing_map: &Value = &TESTING_MAP;
         assert_eq!(JsonMap::new(testing_map).keys().collect::<Vec<_>>(), vec!["k1", "k2"]);
     }
 
     #[test]
     fn values() {
-        let testing_map: &serde_yaml::Value = &TESTING_MAP;
+        let testing_map: &Value = &TESTING_MAP;
         assert_eq!(JsonMap::new(testing_map).values().collect::<Vec<_>>(), vec![&yaml!["v1"], &yaml!["v2"]]);
     }
 
     #[test]
     fn items() {
-        let testing_map: &serde_yaml::Value = &TESTING_MAP;
+        let testing_map: &Value = &TESTING_MAP;
         assert_eq!(JsonMap::new(testing_map).items().collect::<Vec<_>>(), vec![("k1", &yaml!["v1"]), ("k2", &yaml!["v2"])]);
     }
 }
@@ -157,6 +160,7 @@ mod tests_yaml_map_trait {
 #[cfg(test)]
 mod tests_primitive_type_trait {
     use crate::json_type::{JsonType, PrimitiveType};
+    use serde_yaml::Value;
     use std::ops::Deref;
     use test_case::test_case;
 
@@ -167,26 +171,26 @@ mod tests_primitive_type_trait {
     #[test_case(&yaml![1.2], PrimitiveType::Number)]
     #[test_case(&yaml![{"prop": "value"}], PrimitiveType::Object)]
     #[test_case(&yaml!["string"], PrimitiveType::String)]
-    fn test_primitive_type(value: &serde_yaml::Value, expected_value: PrimitiveType) {
+    fn test_primitive_type(value: &Value, expected_value: PrimitiveType) {
         assert_eq!(JsonType::primitive_type(value), expected_value);
     }
 
     #[test_case(&yaml![{"present": 1}], "present", Some(&yaml![1]))]
     #[test_case(&yaml![{"present": 1}], "not-present", None)]
-    fn test_get_attribute(value: &serde_yaml::Value, attribute_name: &str, expected_value: Option<&serde_yaml::Value>) {
+    fn test_get_attribute(value: &Value, attribute_name: &str, expected_value: Option<&Value>) {
         assert_eq!(JsonType::get_attribute(value, attribute_name), expected_value);
     }
 
     #[test_case(&yaml![[0, 1, 2]], 1, &Some(yaml![1]))]
     #[test_case(&yaml![[0, 1, 2]], 4, &None)]
-    fn test_get_index(value: &serde_yaml::Value, index: usize, expected_value: &Option<serde_yaml::Value>) {
+    fn test_get_index(value: &Value, index: usize, expected_value: &Option<Value>) {
         assert_eq!(JsonType::get_index(value, index), expected_value.as_ref());
     }
 
     #[test_case(&yaml![{"present": 1}], "present", true)]
     #[test_case(&yaml![{"present": 1}], "not-present", false)]
     #[test_case(&yaml![[1, 2, 3]], "not-present", false)]
-    fn test_has_attribute(value: &serde_yaml::Value, attr_name: &str, expected_value: bool) {
+    fn test_has_attribute(value: &Value, attr_name: &str, expected_value: bool) {
         assert_eq!(JsonType::has_attribute(value, attr_name), expected_value);
     }
 
@@ -197,7 +201,7 @@ mod tests_primitive_type_trait {
     #[test_case(&yaml![1.2_f32], false)]
     #[test_case(&yaml![{"key": "value"}], false)]
     #[test_case(&yaml!["string"], false)]
-    fn test_is_array(value: &serde_yaml::Value, expected_value: bool) {
+    fn test_is_array(value: &Value, expected_value: bool) {
         assert_eq!(JsonType::is_array(value), expected_value);
     }
 
@@ -208,7 +212,7 @@ mod tests_primitive_type_trait {
     #[test_case(&yaml![1.2_f32], false)]
     #[test_case(&yaml![{"key": "value"}], false)]
     #[test_case(&yaml!["string"], false)]
-    fn test_is_boolean(value: &serde_yaml::Value, expected_value: bool) {
+    fn test_is_boolean(value: &Value, expected_value: bool) {
         assert_eq!(JsonType::is_boolean(value), expected_value);
     }
 
@@ -219,7 +223,7 @@ mod tests_primitive_type_trait {
     #[test_case(&yaml![1.2_f32], false)]
     #[test_case(&yaml![{"key": "value"}], false)]
     #[test_case(&yaml!["string"], false)]
-    fn test_is_integer(value: &serde_yaml::Value, expected_value: bool) {
+    fn test_is_integer(value: &Value, expected_value: bool) {
         assert_eq!(JsonType::is_integer(value), expected_value);
     }
 
@@ -230,7 +234,7 @@ mod tests_primitive_type_trait {
     #[test_case(&yaml![1.2_f32], false)]
     #[test_case(&yaml![{"key": "value"}], false)]
     #[test_case(&yaml!["string"], false)]
-    fn test_is_null(value: &serde_yaml::Value, expected_value: bool) {
+    fn test_is_null(value: &Value, expected_value: bool) {
         assert_eq!(JsonType::is_null(value), expected_value);
     }
 
@@ -241,7 +245,7 @@ mod tests_primitive_type_trait {
     #[test_case(&yaml![1.2_f32], true)]
     #[test_case(&yaml![{"key": "value"}], false)]
     #[test_case(&yaml!["string"], false)]
-    fn test_is_number(value: &serde_yaml::Value, expected_value: bool) {
+    fn test_is_number(value: &Value, expected_value: bool) {
         assert_eq!(JsonType::is_number(value), expected_value);
     }
 
@@ -252,7 +256,7 @@ mod tests_primitive_type_trait {
     #[test_case(&yaml![1.2_f32], false)]
     #[test_case(&yaml![{"key": "value"}], true)]
     #[test_case(&yaml!["string"], false)]
-    fn test_is_object(value: &serde_yaml::Value, expected_value: bool) {
+    fn test_is_object(value: &Value, expected_value: bool) {
         assert_eq!(JsonType::is_object(value), expected_value);
     }
 
@@ -263,52 +267,52 @@ mod tests_primitive_type_trait {
     #[test_case(&yaml![1.2_f32], false)]
     #[test_case(&yaml![{"key": "value"}], false)]
     #[test_case(&yaml!["string"], true)]
-    fn test_is_string(value: &serde_yaml::Value, expected_value: bool) {
+    fn test_is_string(value: &Value, expected_value: bool) {
         assert_eq!(JsonType::is_string(value), expected_value);
     }
 
     #[test_case(&yaml![[1]], &Some(vec![yaml![1]]))]
     #[test_case(&yaml![[1, "a"]], &Some(vec![yaml![1], yaml!["a"]]))]
     #[test_case(&yaml![null], &None)]
-    fn test_as_array(value: &serde_yaml::Value, expected_value: &Option<Vec<serde_yaml::Value>>) {
+    fn test_as_array(value: &Value, expected_value: &Option<Vec<Value>>) {
         assert_eq!(&JsonType::as_array(value).map(|iterator| iterator.cloned().collect()), expected_value);
     }
 
     #[test_case(&yaml![true], Some(true))]
     #[test_case(&yaml![false], Some(false))]
     #[test_case(&yaml![1], None)]
-    fn test_as_boolean(value: &serde_yaml::Value, expected_value: Option<bool>) {
+    fn test_as_boolean(value: &Value, expected_value: Option<bool>) {
         assert_eq!(JsonType::as_boolean(value), expected_value);
     }
 
     #[test_case(&yaml![1], Some(1))]
     #[test_case(&yaml![1.2], None)]
     #[test_case(&yaml!["1"], None)]
-    fn test_as_integer(value: &serde_yaml::Value, expected_value: Option<i128>) {
+    fn test_as_integer(value: &Value, expected_value: Option<i128>) {
         assert_eq!(JsonType::as_integer(value), expected_value);
     }
 
     #[test_case(&yaml![null], Some(()))]
     #[test_case(&yaml!["1"], None)]
-    fn test_as_null(value: &serde_yaml::Value, expected_value: Option<()>) {
+    fn test_as_null(value: &Value, expected_value: Option<()>) {
         assert_eq!(JsonType::as_null(value), expected_value);
     }
 
     #[test_case(&yaml![1], Some(1_f64))]
     #[test_case(&yaml![1.2], Some(1.2))]
     #[test_case(&yaml!["1"], None)]
-    fn test_as_number(value: &serde_yaml::Value, expected_value: Option<f64>) {
+    fn test_as_number(value: &Value, expected_value: Option<f64>) {
         assert_eq!(JsonType::as_number(value), expected_value);
     }
 
     #[test_case(&yaml![1], &None)]
     #[test_case(&yaml![1.2], &None)]
     #[test_case(&yaml![{"1": 1}], &Some(yaml![{"1": 1}]))]
-    fn test_as_object(value: &serde_yaml::Value, expected_value: &Option<serde_yaml::Value>) {
+    fn test_as_object(value: &Value, expected_value: &Option<Value>) {
         assert_eq!(
             match JsonType::as_object(value) {
                 Some(ref v) => Some({
-                    #[allow(clippy::explicit_deref_methods)] // Explicit deref call is needed to ensure that &serde_yaml::Value is retrieved from JsonMap
+                    #[allow(clippy::explicit_deref_methods)] // Explicit deref call is needed to ensure that &Value is retrieved from JsonMap
                     v.deref()
                 }),
                 None => None,
@@ -320,22 +324,23 @@ mod tests_primitive_type_trait {
     #[test_case(&yaml![1], None)]
     #[test_case(&yaml![1.2], None)]
     #[test_case(&yaml!["1"], Some("1"))]
-    fn test_as_string(value: &serde_yaml::Value, expected_value: Option<&str>) {
+    fn test_as_string(value: &Value, expected_value: Option<&str>) {
         assert_eq!(JsonType::as_string(value), expected_value);
     }
 }
 
 #[cfg(test)]
-mod json_map_tests {
-    use crate::{json_type::JsonType, JsonMapTrait};
+mod tests_json_map {
+    use crate::json_type::{JsonMapTrait, JsonType};
+    use serde_yaml::Value;
 
     lazy_static! {
-        static ref TESTING_MAP: serde_yaml::Value = yaml![{"key1": {"key2": 1}}];
+        static ref TESTING_MAP: Value = yaml![{"key1": {"key2": 1}}];
     }
 
     #[test]
     fn test_keys() {
-        let key1: &serde_yaml::Value = TESTING_MAP.get_attribute("key1").unwrap();
+        let key1: &Value = TESTING_MAP.get_attribute("key1").unwrap();
         assert_eq!(JsonType::as_object(key1).unwrap().keys().collect::<Vec<_>>(), vec![String::from("key2")]);
     }
 
@@ -344,7 +349,7 @@ mod json_map_tests {
         let key1 = TESTING_MAP.get_attribute("key1").unwrap();
         assert_eq!(
             JsonType::as_object(key1).unwrap().values().map(|v| format!("{:?}", v)).collect::<Vec<_>>(),
-            vec![format!("{:?}", serde_yaml::Value::from(1))],
+            vec![format!("{:?}", Value::from(1))],
         );
     }
 
@@ -353,7 +358,29 @@ mod json_map_tests {
         let key1 = TESTING_MAP.get_attribute("key1").unwrap();
         assert_eq!(
             JsonType::as_object(key1).unwrap().items().map(|(k, v)| format!("{} -> {:?}", k, v)).collect::<Vec<_>>(),
-            vec![format!("key2 -> {:?}", serde_yaml::Value::from(1))],
+            vec![format!("key2 -> {:?}", Value::from(1))],
+        );
+    }
+}
+
+#[cfg(test)]
+mod tests_to_json_string {
+    use crate::json_type::JsonTypeToString;
+
+    #[test]
+    fn smoke_test() {
+        let value = yaml![[
+            {"array": []},
+            {"boolean": false},
+            {"float": 2.3},
+            {"integer": 1},
+            {"null": null},
+            {"object": {}},
+            {"string": "string"},
+        ]];
+        assert_eq!(
+            value.to_json_string(),
+            r#"[{"array":[]},{"boolean":false},{"float":2.3},{"integer":1},{"null":null},{"object":{}},{"string":"string"}]"#
         );
     }
 }

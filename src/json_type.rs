@@ -84,10 +84,15 @@ pub trait ToRustType {
     }
 }
 
+#[allow(clippy::module_name_repetitions)]
+pub trait JsonTypeToString {
+    fn to_json_string(&self) -> String;
+}
+
 // This trait allows us to have a 1:1 mapping with serde_json, generally used by rust libraries
 // but gives us the power to use different objects from serde_json. This gives us the ability
 // to support usage of different data-types like PyObject from pyo3 in case of python bindings
-pub trait JsonType: Debug + ToRustType {
+pub trait JsonType: JsonTypeToString + ToRustType {
     fn as_array<'json>(&'json self) -> Option<Box<dyn ExactSizeIterator<Item = &Self> + 'json>>
     where
         Self: Sized;
@@ -211,6 +216,12 @@ impl<'json, T: JsonType> JsonMapTrait<'json, T> for JsonMap<'json, T> {
     #[must_use]
     default fn items(&'json self) -> Box<dyn Iterator<Item = (&str, &T)>> {
         todo!("The library relies on specialization to reduce the amount of trait constraints needed for JsonType. That's why we have this dummy JsonMapTrait::items implementation. NOTE: All the types implementing JsonType trait should take care of implementing at least JsonMapTrait::items as well.")
+    }
+}
+
+impl<T: JsonType> JsonTypeToString for T {
+    default fn to_json_string(&self) -> String {
+        self.to_rust_type().to_json_string()
     }
 }
 
