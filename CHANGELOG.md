@@ -3,20 +3,24 @@ Changelog
 
 0.10.0 (2020-04-18)
 -------------------
-- Use specialization to have default implementation for JsonMap such tht trait constraints would not be required - [PR #33][https://github.com/macisamuele/json-trait-rs/pull/33)
+
+- Use specialization to have default implementation for JsonMap such tht trait constraints would not be required - [PR #33](https://github.com/macisamuele/json-trait-rs/pull/33)
 
 0.9.0 (2020-04-12)
 ------------------
+
 - Update `json_trait_rs::json_type::JsonType` trait to remove generic type from trait and to update trait hierarchy to shorten trait usage - [PR #31](https://github.com/macisamuele/json-trait-rs/pull/31)
 
-WARNING: This reduces the Into<RustType> guarantee (even if we manually guarantee it) and ToRustType does still provide access point to a similar feature
+WARNING: This reduces the `Into<RustType>` guarantee (even if we manually guarantee it) and ToRustType does still provide access point to a similar feature
 
 0.8.0 (2020-03-23)
 ------------------
+
 - Implement `json_trait_rs::JsonType::to_rust_type` (similar to `Into<RustType>` but from a reference)
 
 0.7.0 (2020-03-04)
 ------------------
+
 - `json_trait_rs::JsonType::as_array` returns `ExactSizeIterator` - [PR #24](https://github.com/macisamuele/json-trait-rs/pull/24)
 - Improve `json_trait_rs::RustType` definition to store floats as well - [PR #26](https://github.com/macisamuele/json-trait-rs/pull/26)
 - `json_trait_rs::JsonType` must implement `Into<json_trait_rs::RustType>` - [PR #26](https://github.com/macisamuele/json-trait-rs/pull/26)
@@ -25,24 +29,31 @@ WARNING: This reduces the Into<RustType> guarantee (even if we manually guarante
 
 0.6.0 (2019-12-19)
 ------------------
+
 - Relax ``JsonType`` to not be thread safe and define ``ThreadSafeJsonType`` to provide the thread safe version - [PR #22](https://github.com/macisamuele/json-trait-rs/pull/22)
 
 0.5.1 (2019-10-19)
 ------------------
+
 - Reduce usage of ``#[inline]`` and ensure that method results are used via ``#[must_use]`` - [PR #17](https://github.com/macisamuele/json-trait-rs/pull/17)
 
 0.5.0 (2019-09-29)
 ------------------
-- Replace [`test-crate-derive`](https://github.com/synek317/test-case-derive/) with [`test-crate`](https://github.com/frondeus/test-case) - [PR #14](https://github.com/macisamuele/json-trait-rs/pull/14)<br/>
+
+- Replace [`test-crate-derive`](https://github.com/synek317/test-case-derive/) with [`test-crate`](https://github.com/frondeus/test-case) - [PR #14](https://github.com/macisamuele/json-trait-rs/pull/14)
+
   There are no API and/or feature changes respect previous changes, but as non-test code was modified I've releaesed a new version ;)
 
 0.4.0 (2019-07-28)
 ------------------
-- Ensure that `json_trait_rs::JsonType` traits can be made into object (ie. `Box<dyn JsonType<_>>`) - [PR #6](https://github.com/macisamuele/json-trait-rs/pull/6)<br/>
+
+- Ensure that `json_trait_rs::JsonType` traits can be made into object (ie. `Box<dyn JsonType<_>>`) - [PR #6](https://github.com/macisamuele/json-trait-rs/pull/6)
+
   **WARNING** this required:
   - change in the `json_trait_rs::JsonType` definition as now needs `Self` to be specified (`JsonType<Self>`)
   - removal of `json_trait_rs::JsonType::get` method to extract array item or attribute value
-  - removal of `json_trait_rs::JsonType::fragment`.<br/>
+  - removal of `json_trait_rs::JsonType::fragment`.
+
     The functionality has been migrated into `json_trait_rs::get_fragment`
 - Implement `json_trait_rs::JsonType` trait for [`pyo3::types::PyAny`](https://github.com/PyO3/pyo3) - [PR #9](https://github.com/macisamuele/json-trait-rs/pull/9)
 - Simplify lifetimes across the code-base - [PR #7](https://github.com/macisamuele/json-trait-rs/pull/7) and [PR #8](https://github.com/macisamuele/json-trait-rs/pull/8)
@@ -52,15 +63,18 @@ WARNING: This reduces the Into<RustType> guarantee (even if we manually guarante
 
 0.3.0 (2019-06-02)
 ------------------
+
 - Export macros and rename ``json_trait_rs::TestingType`` into ``json_trait_rs::RustType`` - [PR #3](https://github.com/macisamuele/json-trait-rs/pull/3)
 
 0.2.0 (2019-05-26)
 ------------------
+
 - Consider private internal modules and expose, in the top level, the important structs, enum and traits - [PR #1](https://github.com/macisamuele/json-trait-rs/pull/1/)
 - Simplify `json_trait_rs::JsonType` signature (remove lifetime and `json_trait_rs::JsonMap` constraint from the class) - [PR #1](https://github.com/macisamuele/json-trait-rs/pull/1/)
 
 0.1.0 (2019-04-25)
 ------------------
+
 - Initial project release
 - Definition of `JsonType` trait
 - Implementation of trait for [`json::JsonValue`](https://github.com/maciejhirsz/json-rust/), [`serde_json::Value`](https://github.com/serde-rs/json/) and [`serde_yaml::Value`](https://github.com/dtolnay/serde-yaml).
