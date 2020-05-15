@@ -6,7 +6,7 @@ use crate::{
 use pyo3::Python;
 use pyo3::{
     types::{PyAny, PyDict, PySequence},
-    ObjectProtocol, PyTryInto,
+    PyTryInto,
 };
 use std::{convert::TryInto, ops::Deref};
 
