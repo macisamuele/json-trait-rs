@@ -33,7 +33,7 @@ serde_json = "1"
 test-case = "1"
 
 [dependencies]
-failure = "0"
+thiserror = "1"
 join-lazy-fmt = "0"
 json = { version = "0", optional = true }
 pyo3 = { version = "0", optional = true }
