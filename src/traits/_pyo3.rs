@@ -143,7 +143,7 @@ impl JsonType for PyAny {
 }
 
 #[cfg(test)]
-fn perform_python_check(python_code_string: &str, check: impl Fn(&PyAny) -> ()) {
+fn perform_python_check(python_code_string: &str, check: impl Fn(&PyAny)) {
     let gil = Python::acquire_gil();
     let py = gil.python();
     check(py.eval(python_code_string, None, None).unwrap())

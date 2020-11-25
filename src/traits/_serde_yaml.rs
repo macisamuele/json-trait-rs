@@ -15,6 +15,7 @@ impl ToRustType for Value {}
 impl<'json> JsonMapTrait<'json, Value> for JsonMap<'json, Value> {
     #[must_use]
     fn keys(&'json self) -> Box<dyn Iterator<Item = &str> + 'json> {
+        #[allow(clippy::option_if_let_else)]
         if let Some(obj) = self.as_mapping() {
             Box::new(obj.iter().map(|(key, _)| (key.as_str().unwrap())))
         } else {
@@ -27,6 +28,7 @@ impl<'json> JsonMapTrait<'json, Value> for JsonMap<'json, Value> {
 
     #[must_use]
     fn values(&'json self) -> Box<dyn Iterator<Item = &Value> + 'json> {
+        #[allow(clippy::option_if_let_else)]
         if let Some(obj) = self.as_mapping() {
             Box::new(obj.iter().map(|(_, value)| value))
         } else {
@@ -39,6 +41,7 @@ impl<'json> JsonMapTrait<'json, Value> for JsonMap<'json, Value> {
 
     #[must_use]
     fn items(&'json self) -> Box<dyn Iterator<Item = (&str, &Value)> + 'json> {
+        #[allow(clippy::option_if_let_else)]
         if let Some(obj) = self.as_mapping() {
             Box::new(obj.iter().map(|(key, value)| (key.as_str().unwrap(), value)))
         } else {
@@ -53,11 +56,10 @@ impl<'json> JsonMapTrait<'json, Value> for JsonMap<'json, Value> {
 impl JsonType for Value {
     #[must_use]
     fn as_array<'json>(&'json self) -> Option<Box<dyn ExactSizeIterator<Item = &Self> + 'json>> {
-        if let Some(vec) = self.as_sequence() {
-            Some(Box::new(vec.iter()))
-        } else {
-            None
-        }
+        self.as_sequence().map(|vec| {
+            let b: Box<dyn ExactSizeIterator<Item = _>> = Box::new(vec.iter());
+            b
+        })
     }
 
     #[must_use]
@@ -67,11 +69,7 @@ impl JsonType for Value {
 
     #[must_use]
     fn as_integer(&self) -> Option<i128> {
-        if let Some(value) = self.as_i64() {
-            Some(i128::from(value))
-        } else {
-            None
-        }
+        self.as_i64().map(i128::from)
     }
 
     #[must_use]
