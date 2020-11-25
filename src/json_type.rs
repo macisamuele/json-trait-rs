@@ -61,6 +61,7 @@ pub trait ToRustType {
     where
         Self: Sized + JsonType,
     {
+        #[allow(clippy::option_if_let_else)]
         if let Some(array) = self.as_array() {
             RustType::from(array.map(|item| item.to_rust_type()).collect::<Vec<_>>())
         } else if let Some(bool) = self.as_boolean() {
@@ -281,7 +282,7 @@ mod tests {
 
     #[test]
     fn test_ensure_that_trait_can_be_made_into_an_object() {
-        let _: Option<Box<dyn JsonType>> = None;
+        let _t: Option<Box<dyn JsonType>> = None;
     }
 
     #[test_case("", &Some(rust_type!({"key": {"inner_key": [1, "2"]}})))]
